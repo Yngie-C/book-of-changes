@@ -1,11 +1,13 @@
 import type { CSSProperties } from 'react';
 import type { InterpretationResult } from '@/data/types';
+import { HelpIcon } from '@/components/common/HelpModal';
 
 type ChangingGuideProps = {
   rule: InterpretationResult;
+  onHelp?: () => void;
 };
 
-export default function ChangingGuide({ rule }: ChangingGuideProps) {
+export default function ChangingGuide({ rule, onHelp }: ChangingGuideProps) {
   const wrapStyle: CSSProperties = {
     padding: '14px 16px',
     borderRadius: '12px',
@@ -29,7 +31,10 @@ export default function ChangingGuide({ rule }: ChangingGuideProps) {
 
   return (
     <div style={wrapStyle}>
-      <div style={titleStyle}>변효 해석 가이드</div>
+      <div style={{ ...titleStyle, display: 'flex', alignItems: 'center' }}>
+        변효 해석 가이드
+        {onHelp && <HelpIcon onClick={onHelp} />}
+      </div>
       <div style={descStyle}>{rule.description}</div>
     </div>
   );
