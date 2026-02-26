@@ -34,10 +34,13 @@ export type Hexagram = {
   keyword: string;       // 핵심 키워드
   description: string;   // 괘사
   descriptionOriginal?: string; // 괘사 원문 (한문)
+  descriptionReading?: string;  // 괘사 독음 (한글)
   judgment: string;      // 단전
   judgmentOriginal?: string;    // 단전 원문 (한문)
+  judgmentReading?: string;     // 단전 독음 (한글)
   image: string;         // 상전
   imageOriginal?: string;       // 상전 원문 (한문)
+  imageReading?: string;        // 상전 독음 (한글)
   lines: HexagramLine[]; // 6개 효사
 };
 

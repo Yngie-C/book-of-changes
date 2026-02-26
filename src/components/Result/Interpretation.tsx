@@ -44,21 +44,33 @@ export default function Interpretation({ hexagram }: InterpretationProps) {
     display: 'block',
   };
 
-  const originalTextStyle = (isOpen: boolean): CSSProperties => ({
-    fontFamily: "'Nanum Myeongjo', 'Batang', 'Georgia', serif",
-    fontSize: '16px',
-    color: 'var(--color-text-primary)',
+  const originalWrapStyle = (isOpen: boolean): CSSProperties => ({
     backgroundColor: '#FFFBF0',
     borderLeft: '3px solid #D4A853',
     padding: isOpen ? '12px 14px' : '0 14px',
     borderRadius: '8px',
-    lineHeight: 1.9,
     marginBottom: isOpen ? '10px' : 0,
     overflow: 'hidden',
-    maxHeight: isOpen ? '300px' : '0',
+    maxHeight: isOpen ? '600px' : '0',
     transition: 'max-height 300ms ease, padding 300ms ease, margin-bottom 300ms ease',
     boxSizing: 'border-box',
   });
+
+  const originalTextStyle: CSSProperties = {
+    fontFamily: "'Noto Serif TC', 'Nanum Myeongjo', 'Batang', serif",
+    fontSize: '16px',
+    fontWeight: 700,
+    color: 'var(--color-text-primary)',
+    lineHeight: 1.9,
+    marginBottom: 0,
+  };
+
+  const readingStyle: CSSProperties = {
+    fontSize: '13px',
+    color: 'var(--color-text-secondary)',
+    lineHeight: 1.7,
+    marginTop: '6px',
+  };
 
   const textStyle: CSSProperties = {
     fontSize: '15px',
@@ -69,6 +81,20 @@ export default function Interpretation({ hexagram }: InterpretationProps) {
   const toggle = (key: keyof ToggleState) =>
     setOpen(prev => ({ ...prev, [key]: !prev[key] }));
 
+  const renderOriginal = (
+    original: string | undefined,
+    reading: string | undefined,
+    isOpen: boolean,
+  ) => {
+    if (!original) return null;
+    return (
+      <div style={originalWrapStyle(isOpen)}>
+        <p style={originalTextStyle}>{original}</p>
+        {reading && <p style={readingStyle}>{reading}</p>}
+      </div>
+    );
+  };
+
   return (
     <div style={wrapStyle}>
       <div style={blockStyle}>
@@ -78,11 +104,7 @@ export default function Interpretation({ hexagram }: InterpretationProps) {
             {open.desc ? '원문 접기 ▲' : '원문 보기 ▼'}
           </button>
         )}
-        {hexagram.descriptionOriginal && (
-          <div style={originalTextStyle(open.desc)}>
-            {hexagram.descriptionOriginal}
-          </div>
-        )}
+        {renderOriginal(hexagram.descriptionOriginal, hexagram.descriptionReading, open.desc)}
         <p style={textStyle}>{hexagram.description}</p>
       </div>
       <div style={blockStyle}>
@@ -92,11 +114,7 @@ export default function Interpretation({ hexagram }: InterpretationProps) {
             {open.judg ? '원문 접기 ▲' : '원문 보기 ▼'}
           </button>
         )}
-        {hexagram.judgmentOriginal && (
-          <div style={originalTextStyle(open.judg)}>
-            {hexagram.judgmentOriginal}
-          </div>
-        )}
+        {renderOriginal(hexagram.judgmentOriginal, hexagram.judgmentReading, open.judg)}
         <p style={textStyle}>{hexagram.judgment}</p>
       </div>
       <div style={blockStyle}>
@@ -106,11 +124,7 @@ export default function Interpretation({ hexagram }: InterpretationProps) {
             {open.img ? '원문 접기 ▲' : '원문 보기 ▼'}
           </button>
         )}
-        {hexagram.imageOriginal && (
-          <div style={originalTextStyle(open.img)}>
-            {hexagram.imageOriginal}
-          </div>
-        )}
+        {renderOriginal(hexagram.imageOriginal, hexagram.imageReading, open.img)}
         <p style={textStyle}>{hexagram.image}</p>
       </div>
     </div>
