@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { CSSProperties } from 'react';
 
 type HelpModalProps = {
@@ -72,7 +73,7 @@ export default function HelpModal({ open, onClose, title, children }: HelpModalP
     flexShrink: 0,
   };
 
-  return (
+  return createPortal(
     <div style={backdropStyle} onClick={onClose}>
       <div style={panelStyle} onClick={e => e.stopPropagation()}>
         <div style={headerStyle}>
@@ -83,7 +84,8 @@ export default function HelpModal({ open, onClose, title, children }: HelpModalP
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
