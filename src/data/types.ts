@@ -33,8 +33,11 @@ export type Hexagram = {
   lowerTrigram: string;  // 하괘 이름
   keyword: string;       // 핵심 키워드
   description: string;   // 괘사
+  descriptionOriginal?: string; // 괘사 원문 (한문)
   judgment: string;      // 단전
+  judgmentOriginal?: string;    // 단전 원문 (한문)
   image: string;         // 상전
+  imageOriginal?: string;       // 상전 원문 (한문)
   lines: HexagramLine[]; // 6개 효사
 };
 
