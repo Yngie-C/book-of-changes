@@ -1,0 +1,96 @@
+import type { ReactNode, CSSProperties } from 'react';
+
+type LayoutProps = {
+  title: string;
+  showBack?: boolean;
+  onBack?: () => void;
+  rightContent?: ReactNode;
+  bottomCTA?: ReactNode;
+  children: ReactNode;
+};
+
+export default function Layout({
+  title,
+  showBack = false,
+  onBack,
+  rightContent,
+  bottomCTA,
+  children,
+}: LayoutProps) {
+  const headerStyle: CSSProperties = {
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: '56px',
+    padding: '0 16px',
+    backgroundColor: 'var(--color-bg)',
+    borderBottom: '1px solid var(--color-divider)',
+  };
+
+  const backBtnStyle: CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: 'var(--color-text-primary)',
+    fontSize: '20px',
+  };
+
+  const titleStyle: CSSProperties = {
+    position: 'absolute',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    fontSize: '17px',
+    fontWeight: 600,
+    color: 'var(--color-text-primary)',
+  };
+
+  const mainStyle: CSSProperties = {
+    flex: 1,
+    overflowY: 'auto',
+    paddingBottom: bottomCTA ? '80px' : '0',
+  };
+
+  const bottomStyle: CSSProperties = {
+    position: 'fixed',
+    bottom: 0,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '100%',
+    maxWidth: '480px',
+    padding: '12px 20px calc(12px + env(safe-area-inset-bottom, 0px))',
+    backgroundColor: 'var(--color-bg)',
+    borderTop: '1px solid var(--color-divider)',
+    zIndex: 10,
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
+      <header style={headerStyle}>
+        {showBack ? (
+          <button style={backBtnStyle} onClick={onBack} aria-label="뒤로가기">
+            ←
+          </button>
+        ) : (
+          <div style={{ width: '40px' }} />
+        )}
+        <span style={titleStyle}>{title}</span>
+        <div style={{ width: '40px', display: 'flex', justifyContent: 'flex-end' }}>
+          {rightContent}
+        </div>
+      </header>
+
+      <main style={mainStyle}>{children}</main>
+
+      {bottomCTA && <div style={bottomStyle}>{bottomCTA}</div>}
+    </div>
+  );
+}

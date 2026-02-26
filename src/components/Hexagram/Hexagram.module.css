@@ -1,0 +1,180 @@
+/* ─── Hexagram Stack ─── */
+
+.stack {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ─── Size variants ─── */
+
+.stack.small .line {
+  width: 80px;
+  height: 6px;
+}
+
+.stack.medium .line {
+  width: 120px;
+  height: 8px;
+}
+
+.stack.large .line {
+  width: 160px;
+  height: 10px;
+}
+
+/* ─── Line wrapper (for positioning indicators) ─── */
+
+.lineWrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Yang line: solid bar ─── */
+
+.yangLine {
+  background-color: var(--color-text-primary);
+  border-radius: 2px;
+  width: 100%;
+  height: 100%;
+}
+
+/* ─── Yin line: two half-bars with gap ─── */
+
+.yinLine {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.yinLine::before,
+.yinLine::after {
+  content: '';
+  display: block;
+  width: 44%;
+  height: 100%;
+  background-color: var(--color-text-primary);
+  border-radius: 2px;
+}
+
+/* ─── Changing line variants ─── */
+
+.yangLine.changing {
+  background-color: var(--color-text-primary);
+  outline: 2px solid var(--color-changing);
+  outline-offset: 1px;
+}
+
+.yinLine.changing::before,
+.yinLine.changing::after {
+  background-color: var(--color-text-primary);
+  outline: 2px solid var(--color-changing);
+  outline-offset: 1px;
+}
+
+/* ─── Changing indicator ★ ─── */
+
+.changingIndicator {
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: var(--color-changing);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.stack.small .changingIndicator {
+  right: -16px;
+  font-size: 8px;
+}
+
+.stack.large .changingIndicator {
+  right: -24px;
+  font-size: 12px;
+}
+
+/* ─── Currently animating line (blink) ─── */
+
+.currentLine {
+  animation: blink 1s ease-in-out infinite;
+}
+
+.currentLine .yangLine,
+.currentLine .yinLine::before,
+.currentLine .yinLine::after {
+  background-color: var(--color-primary);
+}
+
+/* ─── Empty slot (not yet cast) ─── */
+
+.emptySlot {
+  width: 100%;
+  height: 100%;
+  border: 1px dashed var(--color-border);
+  border-radius: 2px;
+  opacity: 0.35;
+}
+
+/* ─── Draw animation (reveal line left→right) ─── */
+
+.drawAnimation {
+  transform-origin: left center;
+  animation: drawLine 0.5s ease-out forwards;
+}
+
+/* ─── Unicode symbol display ─── */
+
+.symbol {
+  line-height: 1;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  user-select: none;
+}
+
+.stack.large .symbol {
+  font-size: 64px;
+}
+
+.stack.medium .symbol {
+  font-size: 48px;
+}
+
+.stack.small .symbol {
+  font-size: 32px;
+}
+
+/* ─── Trigram divider (between lower and upper trigram) ─── */
+
+.trigramDivider {
+  width: 100%;
+  height: 2px;
+  background: transparent;
+  margin: 2px 0;
+}
+
+/* ─── Line position label (optional, small) ─── */
+
+.positionLabel {
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.stack.small .positionLabel {
+  display: none;
+}

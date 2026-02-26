@@ -1,0 +1,243 @@
+/* ─── Coin 3D Flip ─── */
+
+.coinContainer {
+  perspective: 800px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.coin {
+  width: 72px;
+  height: 72px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform var(--transition-slow);
+  cursor: pointer;
+}
+
+/* Flip animation classes — referenced via styles.xxx for proper CSS Module scoping */
+.flipToFront {
+  animation: coinFlip 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) var(--flip-delay, 0ms) forwards;
+  transition: none;
+}
+
+.flipToBack {
+  animation: coinFlipBack 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) var(--flip-delay, 0ms) forwards;
+  transition: none;
+}
+
+/* ─── Faces ─── */
+
+.coinFront,
+.coinBack {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+/* Front face: 양(陽) — warm gold */
+.coinFront {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #F0C96B 0%,
+    #D4A853 40%,
+    #C5963A 70%,
+    #A07828 100%
+  );
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+    0 4px 12px rgba(180, 120, 30, 0.35);
+  border: 1.5px solid #D4A853;
+}
+
+/* Back face: 음(陰) — dark bronze, rotated */
+.coinBack {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #A89070 0%,
+    #8B7355 40%,
+    #7A6345 70%,
+    #5E4D35 100%
+  );
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(80, 60, 30, 0.35);
+  border: 1.5px solid #9B8363;
+  transform: rotateY(180deg);
+}
+
+/* ─── Inner decoration ring ─── */
+
+.coinFront::before,
+.coinBack::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+/* ─── Center symbol ─── */
+
+.coinFront::after,
+.coinBack::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.coinSymbol {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.72);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  user-select: none;
+}
+
+.coinSymbolBack {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ─── Result overlay badge ─── */
+
+.resultBadge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+  border: 2px solid var(--color-bg);
+  z-index: 1;
+}
+
+.resultBadge.yang {
+  background-color: var(--color-yang);
+}
+
+.resultBadge.yin {
+  background-color: var(--color-yin);
+}
+
+.resultBadge.changing {
+  background-color: var(--color-changing);
+}
+
+/* ─── Idle state: subtle pulse on tap affordance ─── */
+
+.coin:not(.coinFlipping):active {
+  transform: scale(0.94);
+  transition: transform 80ms ease;
+}
+
+/* ─── Show back face at rest (when coin landed on back) ─── */
+
+.coinShowBack {
+  transform: rotateY(180deg);
+}
+
+/* ─── Ground shadow ─── */
+
+.coinShadow {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 10px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.18) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.coinShadowAnim {
+  animation: shadowPulse 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) var(--flip-delay, 0ms) forwards;
+}
+
+/* ─── Keyframes ─── */
+
+/* Front-landing: 2520deg = 14×180 → front visible
+   Smooth sine-curve arc, peak -40px at ~40%, 5% interval steps */
+@keyframes coinFlip {
+  0%   { transform: rotateY(0deg)    translateY(0)     scale(1); }
+  5%   { transform: rotateY(151deg)  translateY(-7px)  scale(1.01); }
+  10%  { transform: rotateY(302deg)  translateY(-15px) scale(1.02); }
+  15%  { transform: rotateY(454deg)  translateY(-21px) scale(1.03); }
+  20%  { transform: rotateY(605deg)  translateY(-27px) scale(1.04); }
+  25%  { transform: rotateY(756deg)  translateY(-32px) scale(1.05); }
+  30%  { transform: rotateY(907deg)  translateY(-36px) scale(1.06); }
+  35%  { transform: rotateY(1058deg) translateY(-39px) scale(1.06); }
+  40%  { transform: rotateY(1210deg) translateY(-40px) scale(1.06); }
+  45%  { transform: rotateY(1361deg) translateY(-40px) scale(1.06); }
+  50%  { transform: rotateY(1512deg) translateY(-38px) scale(1.05); }
+  55%  { transform: rotateY(1613deg) translateY(-36px) scale(1.04); }
+  60%  { transform: rotateY(1714deg) translateY(-32px) scale(1.03); }
+  65%  { transform: rotateY(1814deg) translateY(-27px) scale(1.02); }
+  70%  { transform: rotateY(1915deg) translateY(-21px) scale(1.015); }
+  75%  { transform: rotateY(2016deg) translateY(-15px) scale(1.01); }
+  80%  { transform: rotateY(2117deg) translateY(-7px)  scale(1); }
+  85%  { transform: rotateY(2217deg) translateY(0)     scale(1); }
+  90%  { transform: rotateY(2318deg) translateY(2px)   scale(0.99); }
+  95%  { transform: rotateY(2419deg) translateY(-1px)  scale(1); }
+  100% { transform: rotateY(2520deg) translateY(0)     scale(1); }
+}
+
+/* Back-landing: 2700deg = 15×180 → back visible
+   Same arc, different rotation end */
+@keyframes coinFlipBack {
+  0%   { transform: rotateY(0deg)    translateY(0)     scale(1); }
+  5%   { transform: rotateY(162deg)  translateY(-7px)  scale(1.01); }
+  10%  { transform: rotateY(324deg)  translateY(-15px) scale(1.02); }
+  15%  { transform: rotateY(486deg)  translateY(-21px) scale(1.03); }
+  20%  { transform: rotateY(648deg)  translateY(-27px) scale(1.04); }
+  25%  { transform: rotateY(810deg)  translateY(-32px) scale(1.05); }
+  30%  { transform: rotateY(972deg)  translateY(-36px) scale(1.06); }
+  35%  { transform: rotateY(1134deg) translateY(-39px) scale(1.06); }
+  40%  { transform: rotateY(1296deg) translateY(-40px) scale(1.06); }
+  45%  { transform: rotateY(1458deg) translateY(-40px) scale(1.06); }
+  50%  { transform: rotateY(1620deg) translateY(-38px) scale(1.05); }
+  55%  { transform: rotateY(1728deg) translateY(-36px) scale(1.04); }
+  60%  { transform: rotateY(1836deg) translateY(-32px) scale(1.03); }
+  65%  { transform: rotateY(1944deg) translateY(-27px) scale(1.02); }
+  70%  { transform: rotateY(2052deg) translateY(-21px) scale(1.015); }
+  75%  { transform: rotateY(2160deg) translateY(-15px) scale(1.01); }
+  80%  { transform: rotateY(2268deg) translateY(-7px)  scale(1); }
+  85%  { transform: rotateY(2376deg) translateY(0)     scale(1); }
+  90%  { transform: rotateY(2484deg) translateY(2px)   scale(0.99); }
+  95%  { transform: rotateY(2592deg) translateY(-1px)  scale(1); }
+  100% { transform: rotateY(2700deg) translateY(0)     scale(1); }
+}
+
+/* Shadow: shrinks as coin rises, grows on landing */
+@keyframes shadowPulse {
+  0%   { transform: translateX(-50%) scaleX(1);    opacity: 1; }
+  20%  { transform: translateX(-50%) scaleX(0.6);  opacity: 0.5; }
+  40%  { transform: translateX(-50%) scaleX(0.35); opacity: 0.25; }
+  60%  { transform: translateX(-50%) scaleX(0.6);  opacity: 0.5; }
+  80%  { transform: translateX(-50%) scaleX(0.9);  opacity: 0.9; }
+  85%  { transform: translateX(-50%) scaleX(1);    opacity: 1; }
+  90%  { transform: translateX(-50%) scaleX(1.08); opacity: 1; }
+  100% { transform: translateX(-50%) scaleX(1);    opacity: 1; }
+}

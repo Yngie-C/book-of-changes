@@ -1,0 +1,87 @@
+:root {
+  /* ─── Colors: Toss-style palette ─── */
+  --color-primary: #3182F6;
+  --color-primary-dark: #1B64DA;
+  --color-primary-light: #E8F3FF;
+
+  --color-bg: #FFFFFF;
+  --color-bg-secondary: #F4F4F4;
+  --color-bg-tertiary: #E8E8E8;
+
+  --color-text-primary: #191F28;
+  --color-text-secondary: #4E5968;
+  --color-text-tertiary: #8B95A1;
+  --color-text-disabled: #B0B8C1;
+
+  /* Line types */
+  --color-yang: #D4380D;
+  --color-yang-bg: #FFF1EC;
+  --color-yin: #0958D9;
+  --color-yin-bg: #E8F4FF;
+  --color-changing: #FA8C16;
+  --color-changing-bg: #FFF7E6;
+
+  /* Coin surfaces */
+  --color-coin-front: #C5963A;
+  --color-coin-back: #8B7355;
+  --color-coin-edge: #D4A853;
+
+  /* Structure */
+  --color-border: #E5E8EB;
+  --color-divider: #F2F4F6;
+
+  /* Semantic */
+  --color-success: #03B26C;
+  --color-error: #E5503C;
+  --color-warning: #FA8C16;
+
+  /* ─── Typography ─── */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', 'Noto Sans KR', sans-serif;
+
+  --font-size-h1: 26px;
+  --font-size-h2: 22px;
+  --font-size-h3: 18px;
+  --font-size-body1: 16px;
+  --font-size-body2: 14px;
+  --font-size-caption: 12px;
+
+  --font-weight-bold: 700;
+  --font-weight-semibold: 600;
+  --font-weight-medium: 500;
+  --font-weight-regular: 400;
+
+  --line-height-tight: 1.3;
+  --line-height-normal: 1.5;
+  --line-height-loose: 1.7;
+
+  /* ─── Spacing ─── */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* ─── Border Radius ─── */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* ─── Shadows ─── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* ─── Transitions ─── */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* ─── Layout ─── */
+  --header-height: 56px;
+  --bottom-cta-height: 80px;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --max-width: 480px;
+}
