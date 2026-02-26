@@ -1,6 +1,27 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
 .rsbuild/
+
+# Environment
 *.local
+.env
+.env.*
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OMC state
 .omc/
+
+# Debug
+npm-debug.log*
