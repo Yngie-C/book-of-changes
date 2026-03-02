@@ -6,8 +6,38 @@ type HomePageProps = {
   onStart: () => void;
 };
 
+const ACCORDION_SECTIONS = [
+  {
+    title: '주역 동전점이란?',
+    content:
+      '주역은 3000년 역사를 가진 동양 고전으로, 변화의 이치를 담고 있습니다. 동전 3개를 던져 우연 속에서 의미 있는 답을 찾는 점술입니다.',
+  },
+  {
+    title: '어떻게 진행하나요?',
+    content:
+      '동전 3개를 총 6번 던집니다. 매 던지기마다 앞면·뒷면의 조합으로 하나의 \'효(爻)\'가 결정되고, 6개의 효가 모여 하나의 \'괘(卦)\'를 이룹니다.',
+  },
+  {
+    title: '결과는 어떻게 읽나요?',
+    content:
+      '완성된 괘에 대한 전체 해석(괘사)과, 변하는 효가 있다면 그 효에 대한 개별 해석(효사)을 함께 읽습니다. 변효가 있으면 \'변괘\'도 참고합니다.',
+  },
+];
+
 export default function HomePage({ onStart }: HomePageProps) {
-  const [showGuide, setShowGuide] = useState(false);
+  const [openSections, setOpenSections] = useState<Set<number>>(new Set());
+
+  const toggleSection = (index: number) => {
+    setOpenSections(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
 
   const contentStyle: CSSProperties = {
     display: 'flex',
@@ -51,28 +81,37 @@ export default function HomePage({ onStart }: HomePageProps) {
     transition: 'transform 150ms ease, box-shadow 150ms ease',
   };
 
-  const guideBtnStyle: CSSProperties = {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '14px',
-    color: 'var(--color-primary)',
-    fontWeight: 500,
-    padding: '4px 0',
+  const accordionWrapperStyle: CSSProperties = {
+    width: '100%',
+    maxWidth: '320px',
     animation: 'fadeIn 350ms ease both',
     animationDelay: '100ms',
   };
 
-  const guideBoxStyle: CSSProperties = {
+  const sectionBtnStyle: CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     width: '100%',
-    maxWidth: '320px',
-    padding: '16px',
-    borderRadius: '12px',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '10px 0',
+    fontSize: '14px',
+    fontWeight: 600,
+    color: 'var(--color-text-secondary)',
+    textAlign: 'left',
+  };
+
+  const sectionContentStyle: CSSProperties = {
     backgroundColor: 'var(--color-bg-secondary)',
+    borderRadius: '12px',
+    padding: '16px',
     fontSize: '14px',
     color: 'var(--color-text-secondary)',
     lineHeight: 1.7,
     animation: 'slideUp 250ms ease both',
+    marginBottom: '4px',
   };
 
   return (
@@ -97,16 +136,24 @@ export default function HomePage({ onStart }: HomePageProps) {
           점 시작하기
         </button>
 
-        <button style={guideBtnStyle} onClick={() => setShowGuide(v => !v)}>
-          사용 방법 보기 {showGuide ? '▲' : '▼'}
-        </button>
-
-        {showGuide && (
-          <div style={guideBoxStyle}>
-            동전 3개를 6번 던져 점괘를 완성합니다. 각 던지기가 하나의 효를 만들고,
-            6개의 효가 모여 하나의 괘가 됩니다.
-          </div>
-        )}
+        <div style={accordionWrapperStyle}>
+          {ACCORDION_SECTIONS.map((section, index) => {
+            const isOpen = openSections.has(index);
+            return (
+              <div key={index} style={{ marginBottom: index < ACCORDION_SECTIONS.length - 1 ? '4px' : 0 }}>
+                <button style={sectionBtnStyle} onClick={() => toggleSection(index)}>
+                  <span>{section.title}</span>
+                  <span>{isOpen ? '▲' : '▼'}</span>
+                </button>
+                {isOpen && (
+                  <div style={sectionContentStyle}>
+                    {section.content}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </Layout>
   );
