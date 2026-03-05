@@ -14,6 +14,9 @@ const config: AppsInTossWebConfig = {
     withBackButton: true,
     withHomeButton: false,
   },
+  webViewProps: {
+    type: 'partner',
+  },
   outdir: './dist',
   web: {
     port: 3000,
