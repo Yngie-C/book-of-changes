@@ -14,6 +14,7 @@ const config: AppsInTossWebConfig = {
     withBackButton: true,
     withHomeButton: false,
   },
+  outdir: './dist',
   web: {
     port: 3000,
     commands: {
