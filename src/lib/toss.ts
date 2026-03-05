@@ -1,30 +1,35 @@
 /**
  * Toss Apps-in-Toss SDK abstraction layer.
- * In production, replace stubs with actual SDK calls.
- * @see https://toss.im/developers/docs/appintos
+ * Uses @apps-in-toss/web-framework bridge APIs.
+ * 로그인 불필요: 사용자 데이터를 수집하지 않는 순수 클라이언트 앱
  */
 
-// Environment detection
+import { share, closeView } from '@apps-in-toss/web-framework';
+
+// 토스 앱 환경 감지
 export function isInTossApp(): boolean {
   if (typeof window === 'undefined') return false;
   return navigator.userAgent.includes('TossApp') ||
-         window.location.hostname.includes('toss');
+         window.location.hostname.includes('tossmini.com');
 }
 
-// Share via Toss native share
+// 공유 기능 (Granite SDK bridge)
 export async function shareViaToss(params: {
   title: string;
   text: string;
   imageUrl?: string;
 }): Promise<boolean> {
-  if (!isInTossApp()) return false;
+  // 토스 앱 내부: SDK share API 사용
+  if (isInTossApp()) {
+    try {
+      await share({ message: `${params.title}\n${params.text}` });
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
-  // When Toss SDK is available:
-  // const { share } = await import('@tossinternals/appintos');
-  // await share(params);
-  // return true;
-
-  // Fallback: use Web Share API (works in Toss WebView)
+  // 토스 앱 외부: Web Share API 폴백
   if (navigator.share) {
     try {
       await navigator.share({ title: params.title, text: params.text });
@@ -36,17 +41,19 @@ export async function shareViaToss(params: {
   return false;
 }
 
-// Close the mini-app
+// 앱 닫기 (Granite SDK bridge)
 export function closeTossApp(): void {
-  if (!isInTossApp()) return;
-  // When SDK available: toss.close();
-  window.history.back();
+  if (isInTossApp()) {
+    closeView().catch(() => {
+      window.history.back();
+    });
+  } else {
+    window.history.back();
+  }
 }
 
-// Track event (analytics)
+// 이벤트 추적 (향후 analytics 연동 예정)
 export function trackEvent(event: string, params?: Record<string, string>): void {
-  if (!isInTossApp()) return;
-  // When SDK available: toss.analytics.track(event, params);
   if (process.env.NODE_ENV !== 'production') {
     console.debug('[toss:track]', event, params);
   }
