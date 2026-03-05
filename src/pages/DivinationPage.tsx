@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
+import { Button, AlertDialog } from '@toss/tds-mobile';
 import type { DivinationSession, LineResult } from '@/data/types';
 import { useCoinToss } from '@/hooks/useCoinToss';
 import Layout from '@/components/common/Layout';
@@ -49,11 +50,18 @@ export default function DivinationPage({
     }
   }, [session.isComplete, onComplete]);
 
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
   const handleBack = () => {
     if (session.currentStep > 0) {
-      const confirmed = window.confirm('점을 중단하시겠습니까?');
-      if (!confirmed) return;
+      setShowConfirmDialog(true);
+      return;
     }
+    onBack();
+  };
+
+  const handleConfirmBack = () => {
+    setShowConfirmDialog(false);
     onBack();
   };
 
@@ -84,29 +92,6 @@ export default function DivinationPage({
     letterSpacing: '0.04em',
   };
 
-  const btnStyle: CSSProperties = {
-    position: 'fixed',
-    bottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: 'calc(100% - 40px)',
-    maxWidth: '440px',
-    padding: '18px',
-    borderRadius: '16px',
-    backgroundColor: isAnimating || session.isComplete
-      ? 'var(--color-text-disabled)'
-      : 'var(--color-primary)',
-    color: 'var(--color-bg)',
-    fontSize: '17px',
-    fontWeight: 700,
-    border: 'none',
-    cursor: isAnimating || session.isComplete ? 'not-allowed' : 'pointer',
-    transition: 'background-color 200ms ease',
-    boxShadow: isAnimating || session.isComplete
-      ? 'none'
-      : '0 4px 16px rgba(49,130,246,0.35)',
-  };
-
   const stepLabelStyle: CSSProperties = {
     position: 'fixed',
     bottom: 'calc(92px + env(safe-area-inset-bottom, 0px))',
@@ -135,17 +120,49 @@ export default function DivinationPage({
         />
 
         <div style={sectionTitleStyle}>동전</div>
-        <CoinToss coins={coins} isAnimating={isAnimating} />
+        <div aria-live="polite">
+          <CoinToss coins={coins} isAnimating={isAnimating} />
+        </div>
       </div>
 
-      <div style={stepLabelStyle}>{stepLabel}</div>
-      <button
-        style={btnStyle}
+      <div style={stepLabelStyle} aria-live="polite">{stepLabel}</div>
+      <Button
+        color="primary"
+        variant="fill"
+        size="xlarge"
+        display="block"
         onClick={handleToss}
         disabled={isAnimating || session.isComplete}
+        aria-disabled={isAnimating || session.isComplete}
+        loading={isAnimating}
+        style={{
+          position: 'fixed',
+          bottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 'calc(100% - 40px)',
+          maxWidth: '440px',
+          zIndex: 5,
+        }}
       >
         {isAnimating ? '던지는 중...' : session.isComplete ? '완성!' : '동전 던지기'}
-      </button>
+      </Button>
+      <AlertDialog
+        open={showConfirmDialog}
+        title="점 중단"
+        description="점을 중단하시겠어요?"
+        alertButton={
+          <>
+            <AlertDialog.AlertButton onClick={() => setShowConfirmDialog(false)} variant="clear">
+              계속하기
+            </AlertDialog.AlertButton>
+            <AlertDialog.AlertButton onClick={handleConfirmBack}>
+              중단하기
+            </AlertDialog.AlertButton>
+          </>
+        }
+        onClose={() => setShowConfirmDialog(false)}
+      />
     </Layout>
   );
 }

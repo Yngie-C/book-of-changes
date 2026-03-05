@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
+import { Button } from '@toss/tds-mobile';
 import type { DivinationSession } from '@/data/types';
 import { useHexagram } from '@/hooks/useHexagram';
 import Layout from '@/components/common/Layout';
@@ -26,23 +27,15 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
 
   const bottomCTA = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <button
-        style={{
-          width: '100%',
-          padding: '16px',
-          borderRadius: '12px',
-          backgroundColor: 'var(--color-primary)',
-          color: 'var(--color-bg)',
-          fontSize: '16px',
-          fontWeight: 700,
-          border: 'none',
-          cursor: 'pointer',
-          minHeight: '44px',
-        }}
+      <Button
+        color="primary"
+        variant="fill"
+        size="xlarge"
+        display="block"
         onClick={onRestart}
       >
         다시 점치기
-      </button>
+      </Button>
       <ShareButton hexagramName={hexagram?.name} />
     </div>
   );
@@ -164,12 +157,13 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
               <button
                 style={changingToggleBtnStyle}
                 onClick={() => setShowChanging(v => !v)}
+                aria-expanded={showChanging}
               >
                 {showChanging ? '변괘 닫기 ▲' : '변괘 보기 ▼'}
               </button>
 
               {showChanging && (
-                <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px', animation: 'slideUp 300ms ease both' }}>
+                <div role="region" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px', animation: 'slideUp 300ms ease both' }}>
                   <div style={{ ...sectionTitleStyle(0), display: 'flex', alignItems: 'center', animation: 'none', marginTop: '4px', marginBottom: '-12px' }}>
                     변괘
                     <HelpIcon onClick={() => setHelpModal('changingHex')} />

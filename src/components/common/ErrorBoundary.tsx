@@ -24,7 +24,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           gap: '16px', textAlign: 'center'
         }}>
           <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-            오류가 발생했습니다
+            오류가 발생했어요
           </p>
           <p style={{ fontSize: '14px', color: 'var(--color-text-tertiary)' }}>
             앱을 다시 실행해 주세요

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { CSSProperties } from 'react';
+import { Toast } from '@toss/tds-mobile';
 import { shareViaToss, isInTossApp } from '@/lib/toss';
 
 type ShareButtonProps = {
@@ -6,6 +8,8 @@ type ShareButtonProps = {
 };
 
 export default function ShareButton({ hexagramName }: ShareButtonProps) {
+  const [showToast, setShowToast] = useState(false);
+
   const handleShare = async () => {
     const title = '주역 동전점';
     const text = hexagramName
@@ -30,7 +34,7 @@ export default function ShareButton({ hexagramName }: ShareButtonProps) {
 
     // Clipboard fallback
     await navigator.clipboard.writeText(text).catch(() => null);
-    alert('결과가 클립보드에 복사되었습니다.');
+    setShowToast(true);
   };
 
   const btnStyle: CSSProperties = {
@@ -51,8 +55,16 @@ export default function ShareButton({ hexagramName }: ShareButtonProps) {
   };
 
   return (
-    <button style={btnStyle} onClick={handleShare}>
-      공유하기
-    </button>
+    <>
+      <button style={btnStyle} onClick={handleShare}>
+        공유하기
+      </button>
+      <Toast
+        open={showToast}
+        position="bottom"
+        text="결과가 클립보드에 복사되었어요"
+        onClose={() => setShowToast(false)}
+      />
+    </>
   );
 }

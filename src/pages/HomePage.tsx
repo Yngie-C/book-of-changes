@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
+import { Button } from '@toss/tds-mobile';
 import Layout from '@/components/common/Layout';
 
 type HomePageProps = {
@@ -10,17 +11,17 @@ const ACCORDION_SECTIONS = [
   {
     title: '주역 동전점이란?',
     content:
-      '주역은 3000년 역사를 가진 동양 고전으로, 변화의 이치를 담고 있습니다. 동전 3개를 던져 우연 속에서 의미 있는 답을 찾는 점술입니다.',
+      '주역은 3000년 역사를 가진 동양 고전으로, 변화의 이치를 담고 있어요. 동전 3개를 던져 우연 속에서 의미 있는 답을 찾는 점술이에요.',
   },
   {
     title: '어떻게 진행하나요?',
     content:
-      '동전 3개를 총 6번 던집니다. 매 던지기마다 앞면·뒷면의 조합으로 하나의 \'효(爻)\'가 결정되고, 6개의 효가 모여 하나의 \'괘(卦)\'를 이룹니다.',
+      '동전 3개를 총 6번 던져요. 매 던지기마다 앞면·뒷면의 조합으로 하나의 \'효(爻)\'가 결정되고, 6개의 효가 모여 하나의 \'괘(卦)\'를 이뤄요.',
   },
   {
     title: '결과는 어떻게 읽나요?',
     content:
-      '완성된 괘에 대한 전체 해석(괘사)과, 변하는 효가 있다면 그 효에 대한 개별 해석(효사)을 함께 읽습니다. 변효가 있으면 \'변괘\'도 참고합니다.',
+      '완성된 괘에 대한 전체 해석(괘사)과, 변하는 효가 있다면 그 효에 대한 개별 해석(효사)을 함께 읽어요. 변효가 있으면 \'변괘\'도 참고해요.',
   },
 ];
 
@@ -66,21 +67,6 @@ export default function HomePage({ onStart }: HomePageProps) {
     whiteSpace: 'pre-line',
   };
 
-  const startBtnStyle: CSSProperties = {
-    width: '100%',
-    maxWidth: '320px',
-    padding: '18px',
-    borderRadius: '16px',
-    backgroundColor: 'var(--color-primary)',
-    color: 'var(--color-bg)',
-    fontSize: '18px',
-    fontWeight: 700,
-    border: 'none',
-    cursor: 'pointer',
-    boxShadow: '0 4px 16px rgba(49,130,246,0.35)',
-    transition: 'transform 150ms ease, box-shadow 150ms ease',
-  };
-
   const accordionWrapperStyle: CSSProperties = {
     width: '100%',
     maxWidth: '320px',
@@ -121,32 +107,39 @@ export default function HomePage({ onStart }: HomePageProps) {
 
         <p style={taglineStyle}>{'마음을 가다듬고\n질문을 떠올리세요'}</p>
 
-        <button
-          style={startBtnStyle}
+        <Button
+          color="primary"
+          variant="fill"
+          size="xlarge"
+          display="block"
           onClick={onStart}
-          onMouseDown={e => {
-            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.97)';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 8px rgba(49,130,246,0.25)';
-          }}
-          onMouseUp={e => {
-            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 16px rgba(49,130,246,0.35)';
-          }}
+          style={{ maxWidth: '320px', width: '100%' }}
         >
           점 시작하기
-        </button>
+        </Button>
 
         <div style={accordionWrapperStyle}>
           {ACCORDION_SECTIONS.map((section, index) => {
             const isOpen = openSections.has(index);
             return (
               <div key={index} style={{ marginBottom: index < ACCORDION_SECTIONS.length - 1 ? '4px' : 0 }}>
-                <button style={sectionBtnStyle} onClick={() => toggleSection(index)}>
+                <button
+                  style={sectionBtnStyle}
+                  onClick={() => toggleSection(index)}
+                  aria-expanded={isOpen}
+                  aria-controls={`accordion-content-${index}`}
+                  id={`accordion-header-${index}`}
+                >
                   <span>{section.title}</span>
                   <span>{isOpen ? '▲' : '▼'}</span>
                 </button>
                 {isOpen && (
-                  <div style={sectionContentStyle}>
+                  <div
+                    style={sectionContentStyle}
+                    id={`accordion-content-${index}`}
+                    role="region"
+                    aria-labelledby={`accordion-header-${index}`}
+                  >
                     {section.content}
                   </div>
                 )}

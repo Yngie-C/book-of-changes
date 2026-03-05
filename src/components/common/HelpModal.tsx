@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { CSSProperties } from 'react';
 
@@ -10,13 +10,54 @@ type HelpModalProps = {
 };
 
 export default function HelpModal({ open, onClose, title, children }: HelpModalProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  // 포커스 복원: 모달 열릴 때 이전 포커스 저장, 닫힐 때 복원
+  useEffect(() => {
+    if (open) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+    } else if (previousFocusRef.current) {
+      previousFocusRef.current.focus();
+      previousFocusRef.current = null;
+    }
+  }, [open]);
+
+  // Escape 닫기 + 포커스 트랩
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const focusableElements = panel.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstEl = focusableElements[0];
+    const lastEl = focusableElements[focusableElements.length - 1];
+
+    firstEl?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === firstEl) {
+          e.preventDefault();
+          lastEl?.focus();
+        }
+      } else {
+        if (document.activeElement === lastEl) {
+          e.preventDefault();
+          firstEl?.focus();
+        }
+      }
     };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
 
   if (!open) return null;
@@ -74,10 +115,21 @@ export default function HelpModal({ open, onClose, title, children }: HelpModalP
   };
 
   return createPortal(
-    <div style={backdropStyle} onClick={onClose}>
-      <div style={panelStyle} onClick={e => e.stopPropagation()}>
+    <div
+      style={backdropStyle}
+      onClick={e => e.target === e.currentTarget && onClose()}
+      onKeyDown={e => e.key === 'Escape' && onClose()}
+      role="presentation"
+    >
+      <div
+        ref={panelRef}
+        style={panelStyle}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="help-modal-title"
+      >
         <div style={headerStyle}>
-          <span style={titleStyle}>{title}</span>
+          <span style={titleStyle} id="help-modal-title">{title}</span>
           <button style={closeBtnStyle} onClick={onClose} aria-label="닫기">
             ✕
           </button>

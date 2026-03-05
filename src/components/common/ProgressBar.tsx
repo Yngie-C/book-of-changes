@@ -39,7 +39,14 @@ export default function ProgressBar({ current, total = 6 }: ProgressBarProps) {
 
   return (
     <div style={wrapStyle}>
-      <div style={trackStyle}>
+      <div
+        style={trackStyle}
+        role="progressbar"
+        aria-valuenow={current}
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-label="점 진행 상태"
+      >
         <div style={fillStyle} />
       </div>
       <span style={labelStyle}>

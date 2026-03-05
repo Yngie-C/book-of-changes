@@ -1,4 +1,5 @@
 import type { ReactNode, CSSProperties } from 'react';
+import { Button } from '@toss/tds-mobile';
 
 type LayoutProps = {
   title: string;
@@ -28,20 +29,6 @@ export default function Layout({
     padding: '0 16px',
     backgroundColor: 'var(--color-bg)',
     borderBottom: '1px solid var(--color-divider)',
-  };
-
-  const backBtnStyle: CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: 'var(--color-text-primary)',
-    fontSize: '20px',
   };
 
   const titleStyle: CSSProperties = {
@@ -76,9 +63,16 @@ export default function Layout({
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
       <header style={headerStyle}>
         {showBack ? (
-          <button style={backBtnStyle} onClick={onBack} aria-label="뒤로가기">
+          <Button
+            color="light"
+            variant="weak"
+            size="small"
+            onClick={onBack}
+            aria-label="뒤로가기"
+            style={{ minWidth: '40px', padding: 0 }}
+          >
             ←
-          </button>
+          </Button>
         ) : (
           <div style={{ width: '40px' }} />
         )}
