@@ -33,11 +33,13 @@ export default function Layout({
 
   const titleStyle: CSSProperties = {
     position: 'absolute',
-    left: '50%',
-    transform: 'translateX(-50%)',
+    left: 0,
+    right: 0,
+    textAlign: 'center',
     fontSize: '17px',
     fontWeight: 600,
     color: 'var(--color-text-primary)',
+    pointerEvents: 'none',
   };
 
   const mainStyle: CSSProperties = {
@@ -49,10 +51,10 @@ export default function Layout({
   const bottomStyle: CSSProperties = {
     position: 'fixed',
     bottom: 0,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '100%',
+    left: 0,
+    right: 0,
     maxWidth: '480px',
+    margin: '0 auto',
     padding: '12px 20px calc(12px + env(safe-area-inset-bottom, 0px))',
     backgroundColor: 'var(--color-bg)',
     borderTop: '1px solid var(--color-divider)',

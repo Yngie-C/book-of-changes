@@ -95,8 +95,9 @@ export default function DivinationPage({
   const stepLabelStyle: CSSProperties = {
     position: 'fixed',
     bottom: 'calc(92px + env(safe-area-inset-bottom, 0px))',
-    left: '50%',
-    transform: 'translateX(-50%)',
+    left: '20px',
+    right: '20px',
+    textAlign: 'center',
     fontSize: '13px',
     color: 'var(--color-text-tertiary)',
     fontWeight: 500,
@@ -126,27 +127,30 @@ export default function DivinationPage({
       </div>
 
       <div style={stepLabelStyle} aria-live="polite">{stepLabel}</div>
-      <Button
-        color="primary"
-        variant="fill"
-        size="xlarge"
-        display="block"
-        onClick={handleToss}
-        disabled={isAnimating || session.isComplete}
-        aria-disabled={isAnimating || session.isComplete}
-        loading={isAnimating}
+      <div
         style={{
           position: 'fixed',
           bottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 'calc(100% - 40px)',
+          left: '20px',
+          right: '20px',
           maxWidth: '440px',
+          margin: '0 auto',
           zIndex: 5,
         }}
       >
-        {isAnimating ? '던지는 중...' : session.isComplete ? '완성!' : '동전 던지기'}
-      </Button>
+        <Button
+          color="primary"
+          variant="fill"
+          size="xlarge"
+          display="block"
+          onClick={handleToss}
+          disabled={isAnimating || session.isComplete}
+          aria-disabled={isAnimating || session.isComplete}
+          loading={isAnimating}
+        >
+          {isAnimating ? '던지는 중...' : session.isComplete ? '완성!' : '동전 던지기'}
+        </Button>
+      </div>
       <AlertDialog
         open={showConfirmDialog}
         title="점 중단"

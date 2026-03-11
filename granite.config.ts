@@ -1,11 +1,11 @@
-import type { AppsInTossWebConfig } from '@apps-in-toss/web-framework/config';
+import { defineConfig } from '@apps-in-toss/web-framework/config';
 
-const config: AppsInTossWebConfig = {
+export default defineConfig({
   appName: 'book-of-changes',
   brand: {
     displayName: '주역 동전점',
     primaryColor: '#3182F6',
-    icon: './public/assets/icon.png',
+    icon: '',
   },
   permissions: [
     { name: 'clipboard', access: 'write' },
@@ -19,12 +19,11 @@ const config: AppsInTossWebConfig = {
   },
   outdir: './dist',
   web: {
+    host: 'localhost',
     port: 3000,
     commands: {
       dev: 'npx rsbuild dev',
       build: 'npx rsbuild build',
     },
   },
-};
-
-export default config;
+});

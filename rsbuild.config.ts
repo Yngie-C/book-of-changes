@@ -14,7 +14,7 @@ export default defineConfig({
     },
   },
   output: {
-    assetPrefix: '/',
+    assetPrefix: 'auto',
   },
   html: {
     template: './index.html',
