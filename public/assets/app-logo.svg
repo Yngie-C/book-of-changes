@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+  <defs>
+    <!-- Background gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#1A1A2E"/>
+      <stop offset="100%" stop-color="#0F0F1A"/>
+    </radialGradient>
+
+    <!-- Gold (Yang/Front) gradient -->
+    <radialGradient id="goldGrad" cx="45%" cy="38%" r="60%">
+      <stop offset="0%" stop-color="#F0C96B"/>
+      <stop offset="35%" stop-color="#D4A853"/>
+      <stop offset="65%" stop-color="#C5963A"/>
+      <stop offset="100%" stop-color="#A07828"/>
+    </radialGradient>
+
+    <!-- Bronze (Yin/Back) gradient -->
+    <radialGradient id="bronzeGrad" cx="55%" cy="58%" r="60%">
+      <stop offset="0%" stop-color="#A89070"/>
+      <stop offset="35%" stop-color="#8B7355"/>
+      <stop offset="65%" stop-color="#7A6345"/>
+      <stop offset="100%" stop-color="#5E4D35"/>
+    </radialGradient>
+
+    <!-- Gold small circle gradient -->
+    <radialGradient id="goldSmall" cx="45%" cy="38%" r="55%">
+      <stop offset="0%" stop-color="#F0C96B"/>
+      <stop offset="50%" stop-color="#D4A853"/>
+      <stop offset="100%" stop-color="#B8922E"/>
+    </radialGradient>
+
+    <!-- Bronze small circle gradient -->
+    <radialGradient id="bronzeSmall" cx="55%" cy="58%" r="55%">
+      <stop offset="0%" stop-color="#A89070"/>
+      <stop offset="50%" stop-color="#8B7355"/>
+      <stop offset="100%" stop-color="#6B5840"/>
+    </radialGradient>
+
+    <!-- Gloss overlay -->
+    <radialGradient id="gloss" cx="42%" cy="30%" r="45%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.25)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+
+    <!-- Outer glow -->
+    <radialGradient id="outerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="65%" stop-color="transparent"/>
+      <stop offset="85%" stop-color="rgba(212,168,83,0.05)"/>
+      <stop offset="100%" stop-color="rgba(212,168,83,0.1)"/>
+    </radialGradient>
+
+    <!-- Drop shadow -->
+    <filter id="mainShadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="0" dy="6" stdDeviation="14" flood-color="rgba(0,0,0,0.45)"/>
+    </filter>
+
+    <!-- Inner shadow for depth -->
+    <filter id="innerDepth" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="rgba(0,0,0,0.2)"/>
+    </filter>
+
+    <!-- Taeguk clipping paths -->
+    <!-- Left half (Gold/Yang) -->
+    <clipPath id="yangClip">
+      <path d="M300,100 A200,200 0 0,0 300,500 A100,100 0 0,0 300,300 A100,100 0 0,1 300,100 Z"/>
+    </clipPath>
+
+    <!-- Right half (Bronze/Yin) -->
+    <clipPath id="yinClip">
+      <path d="M300,100 A200,200 0 0,1 300,500 A100,100 0 0,1 300,300 A100,100 0 0,0 300,100 Z"/>
+    </clipPath>
+
+    <!-- Circle clip for safe area -->
+    <clipPath id="circleClip">
+      <circle cx="300" cy="300" r="280"/>
+    </clipPath>
+
+    <!-- Main circle clip -->
+    <clipPath id="mainCircle">
+      <circle cx="300" cy="300" r="200"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background fill (required) -->
+  <rect width="600" height="600" fill="#0F0F1A"/>
+
+  <!-- Circular grid area -->
+  <circle cx="300" cy="300" r="280" fill="url(#bgGrad)"/>
+  <circle cx="300" cy="300" r="280" fill="url(#outerGlow)"/>
+
+  <!-- Thin circular border -->
+  <circle cx="300" cy="300" r="278" fill="none" stroke="rgba(212,168,83,0.12)" stroke-width="1"/>
+
+  <!-- Content within circular grid -->
+  <g clip-path="url(#circleClip)">
+
+    <!-- === TAEGUK COIN === -->
+    <g filter="url(#mainShadow)">
+
+      <!-- Base circle outline for definition -->
+      <circle cx="300" cy="300" r="200" fill="none"/>
+
+      <!-- Yang (Gold) half - left S-curve -->
+      <g clip-path="url(#yangClip)">
+        <circle cx="300" cy="300" r="200" fill="url(#goldGrad)"/>
+        <!-- Coin texture: dashed ring -->
+        <circle cx="300" cy="300" r="185" fill="none" stroke="rgba(184,134,42,0.3)" stroke-width="0.8" stroke-dasharray="4 3"/>
+        <circle cx="300" cy="300" r="170" fill="none" stroke="rgba(184,134,42,0.15)" stroke-width="0.6"/>
+      </g>
+
+      <!-- Yin (Bronze) half - right S-curve -->
+      <g clip-path="url(#yinClip)">
+        <circle cx="300" cy="300" r="200" fill="url(#bronzeGrad)"/>
+        <!-- Coin texture: dashed ring -->
+        <circle cx="300" cy="300" r="185" fill="none" stroke="rgba(139,115,85,0.3)" stroke-width="0.8" stroke-dasharray="4 3"/>
+        <circle cx="300" cy="300" r="170" fill="none" stroke="rgba(139,115,85,0.15)" stroke-width="0.6"/>
+      </g>
+
+      <!-- Dividing S-curve line for definition -->
+      <path d="M300,100 A100,100 0 0,1 300,300 A100,100 0 0,0 300,500"
+            fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="1.5"/>
+
+      <!-- Small Yin circle in Yang (bronze dot in gold area) -->
+      <g filter="url(#innerDepth)">
+        <circle cx="300" cy="200" r="42" fill="url(#bronzeSmall)"/>
+        <circle cx="300" cy="200" r="35" fill="none" stroke="rgba(139,115,85,0.3)" stroke-width="0.6" stroke-dasharray="3 2"/>
+        <!-- 陰 symbol approximation: broken line -->
+        <rect x="282" y="196" width="14" height="3.5" rx="1" fill="rgba(255,255,255,0.7)"/>
+        <rect x="304" y="196" width="14" height="3.5" rx="1" fill="rgba(255,255,255,0.7)"/>
+        <rect x="282" y="203" width="14" height="3.5" rx="1" fill="rgba(255,255,255,0.7)"/>
+        <rect x="304" y="203" width="14" height="3.5" rx="1" fill="rgba(255,255,255,0.7)"/>
+      </g>
+
+      <!-- Small Yang circle in Yin (gold dot in bronze area) -->
+      <g filter="url(#innerDepth)">
+        <circle cx="300" cy="400" r="42" fill="url(#goldSmall)"/>
+        <circle cx="300" cy="400" r="35" fill="none" stroke="rgba(184,134,42,0.3)" stroke-width="0.6" stroke-dasharray="3 2"/>
+        <!-- 陽 symbol approximation: solid lines -->
+        <rect x="282" y="396" width="36" height="3.5" rx="1" fill="rgba(255,255,255,0.8)"/>
+        <rect x="282" y="403" width="36" height="3.5" rx="1" fill="rgba(255,255,255,0.8)"/>
+      </g>
+
+      <!-- Overall gloss -->
+      <circle cx="300" cy="300" r="200" fill="url(#gloss)"/>
+
+      <!-- Outer rim highlight -->
+      <circle cx="300" cy="300" r="199" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+
+      <!-- Top edge highlight -->
+      <ellipse cx="300" cy="115" rx="80" ry="10" fill="rgba(255,255,255,0.08)"/>
+    </g>
+
+  </g>
+</svg>

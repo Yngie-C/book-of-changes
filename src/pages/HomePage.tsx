@@ -101,7 +101,7 @@ export default function HomePage({ onStart }: HomePageProps) {
   };
 
   return (
-    <Layout title="주역 동전점" showBack={false}>
+    <Layout title="간편 운세 동전 주역점" showBack={false}>
       <div style={contentStyle}>
         <div style={symbolStyle}>䷀</div>
 

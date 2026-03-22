@@ -3,9 +3,9 @@ import { defineConfig } from '@apps-in-toss/web-framework/config';
 export default defineConfig({
   appName: 'book-of-changes',
   brand: {
-    displayName: '주역 동전점',
+    displayName: '간편 운세 동전 주역점',
     primaryColor: '#3182F6',
-    icon: '',
+    icon: 'https://static.toss.im/appsintoss/7363/d2a47f94-753c-48c4-afcd-86dd8fe6bf63.png',
   },
   permissions: [
     { name: 'clipboard', access: 'write' },

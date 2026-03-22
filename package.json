@@ -15,7 +15,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@apps-in-toss/web-framework": "^2.0.4",
+    "@apps-in-toss/web-framework": "^2.0.5",
     "@emotion/react": "^11.14.0",
     "@toss/tds-mobile": "^2.2.1",
     "@toss/tds-mobile-ait": "^2.2.1",

@@ -11,10 +11,10 @@ export default function ShareButton({ hexagramName }: ShareButtonProps) {
   const [showToast, setShowToast] = useState(false);
 
   const handleShare = async () => {
-    const title = '주역 동전점';
+    const title = '간편 운세 동전 주역점';
     const text = hexagramName
-      ? `주역 동전점 결과: ${hexagramName}`
-      : '주역 동전점 결과';
+      ? `간편 운세 동전 주역점 결과: ${hexagramName}`
+      : '간편 운세 동전 주역점 결과';
 
     // Try Toss share first (works inside Toss App)
     if (isInTossApp()) {
