@@ -23,5 +23,10 @@ Thumbs.db
 # OMC state
 .omc/
 
+# Claude / Granite config
+.claude/
+.granite/
+*.ait
+
 # Debug
 npm-debug.log*

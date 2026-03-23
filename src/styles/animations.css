@@ -114,6 +114,15 @@
   }
 }
 
+@keyframes skeletonPulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
 /* ─── Utility Classes ─── */
 
 .animate-fadeIn {

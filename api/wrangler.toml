@@ -1,0 +1,10 @@
+name = "book-of-changes-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://tossmini.com"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "6f9638ae93df4fdab3299e05181bc228"
