@@ -4,6 +4,13 @@
  */
 import { trackEvent } from '@/lib/toss';
 
+// GoogleAdMob SDK 타입 (web-bridge에서 타입이 re-export 안 되므로 직접 정의)
+interface AdMobSDK {
+  isSupported?: () => boolean;
+  loadAppsInTossAdMob: (params: Record<string, unknown>) => (() => void) | undefined;
+  showAppsInTossAdMob: (params: Record<string, unknown>) => void;
+}
+
 // 개발용 테스트 광고 ID
 const TEST_AD_GROUP_ID = 'ait-ad-test-rewarded-id';
 
@@ -16,10 +23,10 @@ export const AD_GROUP_ID = process.env.NODE_ENV === 'production'
  * GoogleAdMob SDK 동적 로드 (lazy)
  * web-bridge는 web-framework의 하위 의존성이므로 동적 import
  */
-async function getGoogleAdMob() {
+async function getGoogleAdMob(): Promise<AdMobSDK | null> {
   try {
     const { GoogleAdMob } = await import('@apps-in-toss/web-bridge');
-    return GoogleAdMob;
+    return GoogleAdMob as unknown as AdMobSDK;
   } catch {
     return null;
   }
@@ -32,7 +39,7 @@ export async function isAdSupported(): Promise<boolean> {
   try {
     const AdMob = await getGoogleAdMob();
     if (!AdMob) return false;
-    return typeof (AdMob as any).isSupported === 'function' ? (AdMob as any).isSupported() : true;
+    return typeof AdMob.isSupported === 'function' ? AdMob.isSupported() : true;
   } catch {
     return false;
   }
@@ -47,7 +54,7 @@ export async function preloadRewardedAd(adGroupId: string = AD_GROUP_ID): Promis
     const AdMob = await getGoogleAdMob();
     if (!AdMob) return null;
 
-    const cleanup = (AdMob as any).loadAppsInTossAdMob({
+    const cleanup = AdMob.loadAppsInTossAdMob({
       adGroupId,
       type: 'rewarded',
       onLoaded: () => {
@@ -77,7 +84,7 @@ export function showRewardedAdFireAndForget(adGroupId: string = AD_GROUP_ID): vo
       const AdMob = await getGoogleAdMob();
       if (!AdMob) return;
 
-      (AdMob as any).showAppsInTossAdMob({
+      AdMob.showAppsInTossAdMob({
         adGroupId,
         type: 'rewarded',
         onRewarded: () => {
