@@ -15,7 +15,12 @@ interface AdMobSDK {
 
 // TossAds SDK 타입
 interface TossAdsSDK {
-  initialize: ((options: { appId: string }) => void) & { isSupported?: () => boolean };
+  initialize: ((options?: {
+    callbacks?: {
+      onInitialized?: () => void;
+      onInitializationFailed?: (error: Error) => void;
+    };
+  }) => void) & { isSupported?: () => boolean };
   attachBanner: ((
     adGroupId: string,
     target: string | HTMLElement,
@@ -54,7 +59,6 @@ export const INTERSTITIAL_AD_GROUP_ID = PROD_INTERSTITIAL_AD_GROUP_ID;
 
 export const BANNER_AD_GROUP_ID = PROD_BANNER_AD_GROUP_ID;
 
-export const TOSS_ADS_APP_ID = '';
 
 /**
  * GoogleAdMob SDK 동적 로드 (lazy)
@@ -248,8 +252,14 @@ export async function attachBannerAd(
     }
 
     // 최초 1회 초기화
-    if (!tossAdsInitialized && TOSS_ADS_APP_ID) {
-      ads.initialize({ appId: TOSS_ADS_APP_ID });
+    if (!tossAdsInitialized) {
+      ads.initialize({
+        callbacks: {
+          onInitialized: () => {
+            trackEvent('toss_ads_initialized');
+          },
+        },
+      });
       tossAdsInitialized = true;
     }
 

@@ -174,7 +174,7 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
 
         {/* Interpretation (괘사/단전/상전) */}
         <div style={animBlock(200)}>
-          <div style={{ ...sectionTitleStyle(200), display: 'flex', alignItems: 'center' }}>
+          <div style={{ ...sectionTitleStyle(250), display: 'flex', alignItems: 'center' }}>
             괘사
             <HelpIcon onClick={() => setHelpModal('hexagram')} />
           </div>
@@ -187,7 +187,7 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
 
         {/* Line texts (효사 accordion) */}
         <div style={animBlock(300)}>
-          <div style={{ ...sectionTitleStyle(300), display: 'flex', alignItems: 'center' }}>
+          <div style={{ ...sectionTitleStyle(350), display: 'flex', alignItems: 'center' }}>
             효사
             <HelpIcon onClick={() => setHelpModal('line')} />
           </div>
@@ -203,9 +203,39 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
           aria-label="광고"
         />
 
+        {/* Changing hexagram toggle — only if changing hexagram exists */}
+        {changingHexagram && (
+          <>
+            <div style={dividerStyle} />
+            <div style={animBlock(450)}>
+              <button
+                style={changingToggleBtnStyle}
+                onClick={() => setShowChanging(v => !v)}
+                aria-expanded={showChanging}
+              >
+                {showChanging ? '변괘 닫기 ▲' : '변괘 보기 ▼'}
+              </button>
+
+              {showChanging && (
+                <div role="region" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px', animation: 'slideUp 300ms ease both' }}>
+                  <div style={{ ...sectionTitleStyle(0), display: 'flex', alignItems: 'center', animation: 'none', marginTop: '4px', marginBottom: '-12px' }}>
+                    변괘
+                    <HelpIcon onClick={() => setHelpModal('changingHex')} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '0 20px' }}>
+                    <HexagramSymbol hexagram={changingHexagram} size="large" />
+                    <HexagramInfo hexagram={changingHexagram} />
+                  </div>
+                  <Interpretation hexagram={changingHexagram} />
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
         {/* AI 맞춤 해석 섹션 */}
         <div style={dividerStyle} />
-        <div style={animBlock(350)}>
+        <div style={animBlock(500)}>
           <button
             style={aiToggleBtnStyle}
             onClick={() => setShowAi(v => !v)}
@@ -246,36 +276,6 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
             </Suspense>
           )}
         </div>
-
-        {/* Changing hexagram toggle — only if changing hexagram exists */}
-        {changingHexagram && (
-          <>
-            <div style={dividerStyle} />
-            <div style={animBlock(450)}>
-              <button
-                style={changingToggleBtnStyle}
-                onClick={() => setShowChanging(v => !v)}
-                aria-expanded={showChanging}
-              >
-                {showChanging ? '변괘 닫기 ▲' : '변괘 보기 ▼'}
-              </button>
-
-              {showChanging && (
-                <div role="region" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px', animation: 'slideUp 300ms ease both' }}>
-                  <div style={{ ...sectionTitleStyle(0), display: 'flex', alignItems: 'center', animation: 'none', marginTop: '4px', marginBottom: '-12px' }}>
-                    변괘
-                    <HelpIcon onClick={() => setHelpModal('changingHex')} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '0 20px' }}>
-                    <HexagramSymbol hexagram={changingHexagram} size="large" />
-                    <HexagramInfo hexagram={changingHexagram} />
-                  </div>
-                  <Interpretation hexagram={changingHexagram} />
-                </div>
-              )}
-            </div>
-          </>
-        )}
       </div>
 
       {/* Help Modals */}
