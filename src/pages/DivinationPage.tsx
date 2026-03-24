@@ -3,10 +3,13 @@ import type { CSSProperties } from 'react';
 import { Button, AlertDialog } from '@toss/tds-mobile';
 import type { DivinationSession, LineResult } from '@/data/types';
 import { useCoinToss } from '@/hooks/useCoinToss';
+import { preloadInterstitialAd, showInterstitialAd } from '@/lib/ads';
 import Layout from '@/components/common/Layout';
 import ProgressBar from '@/components/common/ProgressBar';
 import CoinToss from '@/components/Coin/CoinToss';
 import HexagramStack from '@/components/Hexagram/HexagramStack';
+import HelpModal, { HelpIcon } from '@/components/common/HelpModal';
+import { LineTypeHelp } from '@/components/common/HelpContent';
 
 type DivinationPageProps = {
   session: DivinationSession;
@@ -25,6 +28,13 @@ export default function DivinationPage({
   const resultHandled = useRef(false);
   const completeCalled = useRef(false);
 
+  // 전면형 광고 사전 로드
+  useEffect(() => {
+    let cleanup: (() => void) | null = null;
+    preloadInterstitialAd().then(c => { cleanup = c; });
+    return () => { cleanup?.(); };
+  }, []);
+
   // When coin toss result arrives, add it to session
   useEffect(() => {
     if (result && !resultHandled.current) {
@@ -40,17 +50,20 @@ export default function DivinationPage({
     }
   }, [isAnimating]);
 
-  // When session completes, navigate after short delay
+  // When session completes, show interstitial ad then navigate
   useEffect(() => {
     if (session.isComplete && !completeCalled.current) {
       completeCalled.current = true;
       setTimeout(() => {
-        onComplete();
+        showInterstitialAd(() => {
+          onComplete();
+        });
       }, 1000);
     }
   }, [session.isComplete, onComplete]);
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showLineTypeHelp, setShowLineTypeHelp] = useState(false);
 
   const handleBack = () => {
     if (session.currentStep > 0) {
@@ -124,6 +137,10 @@ export default function DivinationPage({
         <div aria-live="polite">
           <CoinToss coins={coins} isAnimating={isAnimating} />
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '4px' }}>
+          <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>효 종류 알아보기</span>
+          <HelpIcon onClick={() => setShowLineTypeHelp(true)} />
+        </div>
       </div>
 
       <div style={stepLabelStyle} aria-live="polite">{stepLabel}</div>
@@ -167,6 +184,13 @@ export default function DivinationPage({
         }
         onClose={() => setShowConfirmDialog(false)}
       />
+      <HelpModal
+        open={showLineTypeHelp}
+        onClose={() => setShowLineTypeHelp(false)}
+        title="효의 종류"
+      >
+        <LineTypeHelp />
+      </HelpModal>
     </Layout>
   );
 }

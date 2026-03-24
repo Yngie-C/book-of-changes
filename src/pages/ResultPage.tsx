@@ -1,9 +1,10 @@
-import { useState, useRef, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react';
 import type { CSSProperties } from 'react';
 import { Button } from '@toss/tds-mobile';
 import type { DivinationSession } from '@/data/types';
 import { useHexagram } from '@/hooks/useHexagram';
 import { useAiInterpretation } from '@/hooks/useAiInterpretation';
+import { attachBannerAd } from '@/lib/ads';
 import Layout from '@/components/common/Layout';
 import HexagramSymbol from '@/components/Hexagram/HexagramSymbol';
 import HexagramInfo from '@/components/Hexagram/HexagramInfo';
@@ -40,6 +41,23 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
   });
 
   const lastInputRef = useRef<{ situation: string; category: string } | null>(null);
+
+  // 배너 광고
+  const bannerCleanupRef = useRef<(() => void) | null>(null);
+
+  const attachBanner = useCallback((node: HTMLDivElement | null) => {
+    // 이전 배너 정리
+    bannerCleanupRef.current?.();
+    bannerCleanupRef.current = null;
+    if (!node) return;
+    attachBannerAd(node).then(cleanup => {
+      bannerCleanupRef.current = cleanup;
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => { bannerCleanupRef.current?.(); };
+  }, []);
 
   const bottomCTA = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -177,6 +195,13 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
             <LineTexts hexagram={hexagram} highlightedLines={highlightedLines} />
           </div>
         </div>
+
+        {/* 배너 광고 (효사 아래) */}
+        <div
+          ref={attachBanner}
+          style={{ minHeight: '50px', margin: '0 20px' }}
+          aria-label="광고"
+        />
 
         {/* AI 맞춤 해석 섹션 */}
         <div style={dividerStyle} />

@@ -1,6 +1,8 @@
 /**
- * 보상형 광고 추상화 (fire-and-forget 패턴)
- * 광고 결과는 UX에 영향을 주지 않으며, 수익 트래킹만 수행
+ * 광고 추상화 모듈
+ * - 보상형 (Rewarded): fire-and-forget, UX 비차단
+ * - 전면형 (Interstitial): 페이지 전환 사이에 표시, 닫힘 후 진행
+ * - 배너형 (Banner): DOM 요소에 부착, 인라인 표시
  */
 import { trackEvent } from '@/lib/toss';
 
@@ -11,13 +13,48 @@ interface AdMobSDK {
   showAppsInTossAdMob: (params: Record<string, unknown>) => void;
 }
 
+// TossAds SDK 타입
+interface TossAdsSDK {
+  initialize: ((options: { appId: string }) => void) & { isSupported?: () => boolean };
+  attachBanner: ((
+    adGroupId: string,
+    target: string | HTMLElement,
+    options?: {
+      theme?: 'auto' | 'light' | 'dark';
+      tone?: 'blackAndWhite' | 'grey';
+      variant?: 'card' | 'expanded';
+      callbacks?: Record<string, unknown>;
+    },
+  ) => { destroy: () => void }) & { isSupported?: () => boolean };
+  destroy: (slotId: string) => void;
+  destroyAll: () => void;
+}
+
+// FullScreenAd 함수 타입
+interface FullScreenAdLoader {
+  (args: {
+    onEvent: (data: { type: string }) => void;
+    onError: (err: unknown) => void;
+    options?: { adGroupId: string };
+  }): () => void;
+  isSupported?: () => boolean;
+}
+
 // 개발용 테스트 광고 ID
 const TEST_AD_GROUP_ID = 'ait-ad-test-rewarded-id';
+const TEST_INTERSTITIAL_AD_GROUP_ID = 'ait-ad-test-interstitial-id';
+const PROD_INTERSTITIAL_AD_GROUP_ID = 'ait.v2.live.96270e5f78604766';
+const TEST_BANNER_AD_GROUP_ID = 'ait-ad-test-banner-id';
+const PROD_BANNER_AD_GROUP_ID = 'ait.v2.live.73acf2d008f94e8f';
 
-// 프로덕션 광고 ID (콘솔에서 발급 후 교체)
-export const AD_GROUP_ID = process.env.NODE_ENV === 'production'
-  ? (process.env.PUBLIC_AD_GROUP_ID ?? TEST_AD_GROUP_ID)
-  : TEST_AD_GROUP_ID;
+// 보상형 광고 ID (프로덕션 ID 발급 후 교체)
+export const AD_GROUP_ID = TEST_AD_GROUP_ID;
+
+export const INTERSTITIAL_AD_GROUP_ID = PROD_INTERSTITIAL_AD_GROUP_ID;
+
+export const BANNER_AD_GROUP_ID = PROD_BANNER_AD_GROUP_ID;
+
+export const TOSS_ADS_APP_ID = '';
 
 /**
  * GoogleAdMob SDK 동적 로드 (lazy)
@@ -101,4 +138,136 @@ export function showRewardedAdFireAndForget(adGroupId: string = AD_GROUP_ID): vo
       // fire-and-forget: 모든 에러 조용히 무시
     }
   })();
+}
+
+// ─── 전면형 광고 (Interstitial / FullScreen) ───
+
+/**
+ * 전면형 광고 사전 로드
+ * @returns cleanup 함수
+ */
+export async function preloadInterstitialAd(
+  adGroupId: string = INTERSTITIAL_AD_GROUP_ID,
+): Promise<(() => void) | null> {
+  try {
+    const { loadFullScreenAd } = await import('@apps-in-toss/web-bridge');
+    const loader = loadFullScreenAd as unknown as FullScreenAdLoader;
+    if (typeof loader.isSupported === 'function' && !loader.isSupported()) return null;
+
+    const cleanup = loader({
+      options: { adGroupId },
+      onEvent: (event) => {
+        if (event.type === 'loaded') {
+          trackEvent('interstitial_preloaded', { adGroupId });
+        }
+      },
+      onError: () => {
+        // 조용히 무시
+      },
+    });
+
+    return cleanup ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 전면형 광고 표시
+ * 광고 닫힘/실패 시 onDone 콜백 호출 → 페이지 전환에 사용
+ */
+export async function showInterstitialAd(
+  onDone: () => void,
+  adGroupId: string = INTERSTITIAL_AD_GROUP_ID,
+): Promise<void> {
+  try {
+    const { showFullScreenAd } = await import('@apps-in-toss/web-bridge');
+    const shower = showFullScreenAd as unknown as FullScreenAdLoader;
+    if (typeof shower.isSupported === 'function' && !shower.isSupported()) {
+      onDone();
+      return;
+    }
+
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      onDone();
+    };
+
+    shower({
+      options: { adGroupId },
+      onEvent: (event) => {
+        trackEvent('interstitial_event', { adGroupId, type: event.type });
+        if (event.type === 'dismissed' || event.type === 'failedToShow') {
+          finish();
+        }
+      },
+      onError: () => {
+        finish();
+      },
+    });
+
+    // 안전망: 10초 후 강제 진행
+    setTimeout(finish, 10_000);
+  } catch {
+    onDone();
+  }
+}
+
+// ─── 배너형 광고 (TossAds Banner) ───
+
+let tossAdsInitialized = false;
+
+/**
+ * TossAds SDK 동적 로드
+ */
+async function getTossAds(): Promise<TossAdsSDK | null> {
+  try {
+    const { TossAds } = await import('@apps-in-toss/web-bridge');
+    return TossAds as unknown as TossAdsSDK;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 배너 광고를 DOM 요소에 부착
+ * @param target - 배너를 부착할 HTML 요소
+ * @returns destroy 함수 (cleanup용)
+ */
+export async function attachBannerAd(
+  target: HTMLElement,
+  adGroupId: string = BANNER_AD_GROUP_ID,
+): Promise<(() => void) | null> {
+  try {
+    const ads = await getTossAds();
+    if (!ads) return null;
+    if (typeof ads.attachBanner.isSupported === 'function' && !ads.attachBanner.isSupported()) {
+      return null;
+    }
+
+    // 최초 1회 초기화
+    if (!tossAdsInitialized && TOSS_ADS_APP_ID) {
+      ads.initialize({ appId: TOSS_ADS_APP_ID });
+      tossAdsInitialized = true;
+    }
+
+    const result = ads.attachBanner(adGroupId, target, {
+      theme: 'auto',
+      variant: 'card',
+      callbacks: {
+        onAdRendered: () => {
+          trackEvent('banner_rendered', { adGroupId });
+        },
+        onAdFailedToRender: () => {
+          trackEvent('banner_failed', { adGroupId });
+        },
+      },
+    });
+
+    return () => result.destroy();
+  } catch {
+    return null;
+  }
 }

@@ -93,6 +93,42 @@ export function ChangingHexagramHelp() {
   );
 }
 
+export function LineTypeHelp() {
+  return (
+    <div>
+      <div style={blockStyle}>
+        <div style={labelStyle}>소양(少陽) · 값 7</div>
+        <div style={textStyle}>
+          앞면 2개 + 뒷면 1개가 나온 양효(⚊)예요.
+          안정된 양의 기운으로, 변하지 않고 그대로 유지돼요.
+        </div>
+        <div style={labelStyle}>소음(少陰) · 값 8</div>
+        <div style={textStyle}>
+          앞면 1개 + 뒷면 2개가 나온 음효(⚋)예요.
+          안정된 음의 기운으로, 변하지 않고 그대로 유지돼요.
+        </div>
+        <div style={labelStyle}>노양(老陽) · 값 9</div>
+        <div style={textStyle}>
+          앞면 3개가 모두 나온 양효(⚊)예요.
+          양의 기운이 극에 달해 음으로 변하는 변효예요.
+        </div>
+        <div style={labelStyle}>노음(老陰) · 값 6</div>
+        <div style={{ ...textStyle, marginBottom: 0 }}>
+          뒷면 3개가 모두 나온 음효(⚋)예요.
+          음의 기운이 극에 달해 양으로 변하는 변효예요.
+        </div>
+      </div>
+      <div style={lastBlockStyle}>
+        <div style={labelStyle}>변효가 중요한 이유</div>
+        <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.8 }}>
+          노양·노음은 음양이 바뀌면서 새로운 괘(변괘)를 만들어요.
+          변효의 효사가 현재 상황에서 가장 핵심적인 메시지를 담고 있어요.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ChangingLineHelp() {
   return (
     <div>
