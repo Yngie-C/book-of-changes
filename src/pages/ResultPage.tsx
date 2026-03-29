@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Button } from '@toss/tds-mobile';
 import type { DivinationSession } from '@/data/types';
 import { useHexagram } from '@/hooks/useHexagram';
-import { useAiInterpretation } from '@/hooks/useAiInterpretation';
-import { attachBannerAd } from '@/lib/ads';
+// import { useAiInterpretation } from '@/hooks/useAiInterpretation';
+// import { attachBannerAd } from '@/lib/ads';
 import Layout from '@/components/common/Layout';
 import HexagramSymbol from '@/components/Hexagram/HexagramSymbol';
 import HexagramInfo from '@/components/Hexagram/HexagramInfo';
@@ -17,8 +17,8 @@ import HelpModal, { HelpIcon } from '@/components/common/HelpModal';
 import { HexagramHelp, LineTextsHelp, ChangingLineHelp, ChangingHexagramHelp } from '@/components/common/HelpContent';
 
 // AI 컴포넌트는 이중 lazy loading (초기 번들 미증가)
-const AiInputForm = lazy(() => import('@/components/Result/AiInputForm'));
-const AiInterpretationCard = lazy(() => import('@/components/Result/AiInterpretationCard'));
+// const AiInputForm = lazy(() => import('@/components/Result/AiInputForm'));
+// const AiInterpretationCard = lazy(() => import('@/components/Result/AiInterpretationCard'));
 
 type ResultPageProps = {
   session: DivinationSession;
@@ -29,35 +29,34 @@ type ResultPageProps = {
 export default function ResultPage({ session, onRestart, onBack }: ResultPageProps) {
   const { hexagram, changingHexagram, interpretationRule } = useHexagram(session.lines);
   const [showChanging, setShowChanging] = useState(false);
-  const [showAi, setShowAi] = useState(false);
+  // const [showAi, setShowAi] = useState(false);
   const [helpModal, setHelpModal] = useState<'hexagram' | 'line' | 'changing' | 'changingHex' | null>(null);
 
   const highlightedLines = interpretationRule?.highlightedLines ?? [];
 
-  const aiHook = useAiInterpretation({
-    hexagramNumber: session.hexagramNumber ?? 1,
-    changingHexagramNumber: session.changingHexagramNumber ?? null,
-    highlightedLines,
-  });
+  // const aiHook = useAiInterpretation({
+  //   hexagramNumber: session.hexagramNumber ?? 1,
+  //   changingHexagramNumber: session.changingHexagramNumber ?? null,
+  //   highlightedLines,
+  // });
 
-  const lastInputRef = useRef<{ situation: string; category: string } | null>(null);
+  // const lastInputRef = useRef<{ situation: string; category: string } | null>(null);
 
-  // 배너 광고
-  const bannerCleanupRef = useRef<(() => void) | null>(null);
+  // 배너 광고 (임시 비활성화)
+  // const bannerCleanupRef = useRef<(() => void) | null>(null);
 
-  const attachBanner = useCallback((node: HTMLDivElement | null) => {
-    // 이전 배너 정리
-    bannerCleanupRef.current?.();
-    bannerCleanupRef.current = null;
-    if (!node) return;
-    attachBannerAd(node).then(cleanup => {
-      bannerCleanupRef.current = cleanup;
-    });
-  }, []);
+  // const attachBanner = useCallback((node: HTMLDivElement | null) => {
+  //   bannerCleanupRef.current?.();
+  //   bannerCleanupRef.current = null;
+  //   if (!node) return;
+  //   attachBannerAd(node).then(cleanup => {
+  //     bannerCleanupRef.current = cleanup;
+  //   });
+  // }, []);
 
-  useEffect(() => {
-    return () => { bannerCleanupRef.current?.(); };
-  }, []);
+  // useEffect(() => {
+  //   return () => { bannerCleanupRef.current?.(); };
+  // }, []);
 
   const bottomCTA = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -130,20 +129,20 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
     width: 'calc(100% - 40px)',
   };
 
-  const aiToggleBtnStyle: CSSProperties = {
-    margin: '0 20px',
-    padding: '14px',
-    borderRadius: '12px',
-    border: '1.5px solid #6B5CE7',
-    backgroundColor: showAi ? '#6B5CE7' : 'var(--color-bg)',
-    color: showAi ? 'var(--color-bg)' : '#6B5CE7',
-    fontSize: '15px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'background-color 200ms ease, color 200ms ease',
-    minHeight: '44px',
-    width: 'calc(100% - 40px)',
-  };
+  // const aiToggleBtnStyle: CSSProperties = {
+  //   margin: '0 20px',
+  //   padding: '14px',
+  //   borderRadius: '12px',
+  //   border: '1.5px solid #6B5CE7',
+  //   backgroundColor: showAi ? '#6B5CE7' : 'var(--color-bg)',
+  //   color: showAi ? 'var(--color-bg)' : '#6B5CE7',
+  //   fontSize: '15px',
+  //   fontWeight: 600,
+  //   cursor: 'pointer',
+  //   transition: 'background-color 200ms ease, color 200ms ease',
+  //   minHeight: '44px',
+  //   width: 'calc(100% - 40px)',
+  // };
 
   return (
     <Layout title="점괘 결과" showBack onBack={onBack} bottomCTA={bottomCTA}>
@@ -196,15 +195,15 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
           </div>
         </div>
 
-        {/* 배너 광고 (효사 아래) */}
-        <div
+        {/* 배너 광고 (임시 비활성화) */}
+        {/* <div
           ref={attachBanner}
           style={{ minHeight: '50px', margin: '0 20px' }}
           aria-label="광고"
-        />
+        /> */}
 
-        {/* AI 맞춤 해석 섹션 */}
-        <div style={dividerStyle} />
+        {/* AI 맞춤 해석 섹션 (임시 비활성화) */}
+        {/* <div style={dividerStyle} />
         <div style={animBlock(350)}>
           <button
             style={aiToggleBtnStyle}
@@ -245,7 +244,7 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
               </div>
             </Suspense>
           )}
-        </div>
+        </div> */}
 
         {/* Changing hexagram toggle — only if changing hexagram exists */}
         {changingHexagram && (
