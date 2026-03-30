@@ -12,20 +12,20 @@ export default function ChangingGuide({ rule, onHelp }: ChangingGuideProps) {
     padding: '14px 16px',
     borderRadius: '12px',
     backgroundColor: 'var(--color-changing-bg)',
-    border: '1px solid #FFD591',
-    margin: '0 20px',
+    border: '1px solid var(--color-changing-border)',
+    margin: 0,
   };
 
   const titleStyle: CSSProperties = {
     fontSize: '13px',
     fontWeight: 600,
-    color: '#D46B08',
+    color: 'var(--color-changing-text)',
     marginBottom: '4px',
   };
 
   const descStyle: CSSProperties = {
     fontSize: '13px',
-    color: '#7C4A00',
+    color: 'var(--color-changing-text-dark)',
     lineHeight: 1.6,
   };
 

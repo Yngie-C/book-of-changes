@@ -47,7 +47,7 @@ function LineItem({
   const posNameStyle: CSSProperties = {
     fontSize: '14px',
     fontWeight: 600,
-    color: isHighlighted ? '#D46B08' : 'var(--color-text-primary)',
+    color: isHighlighted ? 'var(--color-changing-text)' : 'var(--color-text-primary)',
   };
 
   const arrowStyle: CSSProperties = {
@@ -97,7 +97,7 @@ export default function LineTexts({ hexagram, highlightedLines = [] }: LineTexts
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
-    padding: '0 20px',
+    padding: 0,
   };
 
   return (

@@ -10,7 +10,7 @@
 
   --color-text-primary: #191F28;
   --color-text-secondary: #4E5968;
-  --color-text-tertiary: #8B95A1;
+  --color-text-tertiary: #6B7684;
   --color-text-disabled: #B0B8C1;
 
   /* Line types */
@@ -20,6 +20,9 @@
   --color-yin-bg: #E8F4FF;
   --color-changing: #FA8C16;
   --color-changing-bg: #FFF7E6;
+  --color-changing-border: #FFD591;
+  --color-changing-text: #D46B08;
+  --color-changing-text-dark: #7C4A00;
 
   /* Coin surfaces */
   --color-coin-front: #C5963A;
