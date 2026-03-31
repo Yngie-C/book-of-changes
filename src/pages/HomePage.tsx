@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { Button } from '@toss/tds-mobile';
 import Layout from '@/components/common/Layout';
@@ -6,6 +6,12 @@ import Layout from '@/components/common/Layout';
 type HomePageProps = {
   onStart: () => void;
 };
+
+const QUESTION_GROUPS = [
+  ['이번 투자, 해도 될까?', '오늘 소개팅, 좋은 인연일까?', '이번 주 나의 운세는?'],
+  ['이 프로젝트, 잘 마무리될까?', '이직, 지금이 맞을까?'],
+  ['이 선택, 후회 없을까?', '시험 결과, 어떻게 될까?', '우리 사이, 앞으로 어떨까?'],
+];
 
 const ACCORDION_SECTIONS = [
   {
@@ -27,6 +33,19 @@ const ACCORDION_SECTIONS = [
 
 export default function HomePage({ onStart }: HomePageProps) {
   const [openSections, setOpenSections] = useState<Set<number>>(new Set());
+  const [groupIndex, setGroupIndex] = useState(0);
+  const [opacity, setOpacity] = useState(1);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setOpacity(0);
+      setTimeout(() => {
+        setGroupIndex(prev => (prev + 1) % QUESTION_GROUPS.length);
+        setOpacity(1);
+      }, 400);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, []);
 
   const toggleSection = (index: number) => {
     setOpenSections(prev => {
@@ -106,6 +125,44 @@ export default function HomePage({ onStart }: HomePageProps) {
         <div style={symbolStyle}>䷀</div>
 
         <p style={taglineStyle}>{'마음을 가다듬고\n질문을 떠올리세요'}</p>
+
+        <div
+          style={{
+            minHeight: '72px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            maxWidth: '320px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: '8px',
+              opacity,
+              transition: 'opacity 400ms ease',
+            }}
+          >
+            {QUESTION_GROUPS[groupIndex].map((question) => (
+              <span
+                key={question}
+                style={{
+                  backgroundColor: 'var(--color-bg-secondary)',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '13px',
+                  borderRadius: '999px',
+                  padding: '6px 12px',
+                  lineHeight: 1.4,
+                }}
+              >
+                {question}
+              </span>
+            ))}
+          </div>
+        </div>
 
         <Button
           color="primary"
