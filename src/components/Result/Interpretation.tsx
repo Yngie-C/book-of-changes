@@ -23,7 +23,7 @@ export default function Interpretation({ hexagram }: InterpretationProps) {
   const blockStyle: CSSProperties = {
     padding: '16px',
     borderRadius: '12px',
-    backgroundColor: 'var(--color-bg-tertiary)',
+    backgroundColor: 'var(--color-bg-elevated, #F2F4F6)',
   };
 
   const blockTitleStyle: CSSProperties = {
@@ -31,11 +31,9 @@ export default function Interpretation({ hexagram }: InterpretationProps) {
     fontWeight: 600,
     color: 'var(--color-text-secondary)',
     marginBottom: '8px',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
   };
 
-  const accordionHeaderStyle: CSSProperties = {
+  const accordionHeaderStyle = (isOpen: boolean): CSSProperties => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -44,10 +42,10 @@ export default function Interpretation({ hexagram }: InterpretationProps) {
     border: 'none',
     width: '100%',
     padding: '16px',
-    borderRadius: '12px',
-    backgroundColor: 'var(--color-bg-tertiary)',
+    borderRadius: isOpen ? '12px 12px 0 0' : '12px',
+    backgroundColor: 'var(--color-bg-elevated, #F2F4F6)',
     textAlign: 'left',
-  };
+  });
 
   const accordionArrowStyle = (isOpen: boolean): CSSProperties => ({
     fontSize: '12px',
@@ -107,6 +105,16 @@ export default function Interpretation({ hexagram }: InterpretationProps) {
     lineHeight: 1.7,
   };
 
+  const italicTextStyle: CSSProperties = {
+    fontSize: 'var(--font-size-body1)',
+    color: 'var(--color-text-tertiary)',
+    lineHeight: 1.7,
+    fontWeight: 400,
+    marginTop: '10px',
+    paddingTop: '10px',
+    borderTop: '1px solid var(--color-divider)',
+  };
+
   // const toggle = (key: keyof ToggleState) =>
   //   setOpen(prev => ({ ...prev, [key]: !prev[key] }));
 
@@ -128,28 +136,41 @@ export default function Interpretation({ hexagram }: InterpretationProps) {
     <div style={wrapStyle}>
       {/* 괘사 — 상시 노출 */}
       <div style={blockStyle}>
-        <div style={blockTitleStyle}>괘사</div>
+        <div style={blockTitleStyle}>
+          괘사 <span style={{ fontWeight: 400, color: 'var(--color-text-tertiary)' }}>· 이번 점괘의 뜻</span>
+        </div>
         {/* {hexagram.descriptionOriginal && (
           <button style={toggleBtnStyle} onClick={() => toggle('desc')}>
             {open.desc ? '원문 접기 ▲' : '원문 보기 ▼'}
           </button>
         )}
         {renderOriginal(hexagram.descriptionOriginal, hexagram.descriptionReading, open.desc)} */}
-        <p style={textStyle}>{hexagram.description}</p>
+        {hexagram.descriptionSimple ? (
+          <>
+            <p style={textStyle}>{hexagram.descriptionSimple}</p>
+            {hexagram.descriptionSimple !== hexagram.description && (
+              <p style={italicTextStyle}>{hexagram.description}</p>
+            )}
+          </>
+        ) : (
+          <p style={textStyle}>{hexagram.description}</p>
+        )}
       </div>
 
       {/* 단전 — 아코디언 (기본 접힘) */}
       <div>
         <button
-          style={accordionHeaderStyle}
+          style={accordionHeaderStyle(judgOpen)}
           onClick={() => setJudgOpen(o => !o)}
           aria-expanded={judgOpen}
         >
-          <span style={blockTitleStyle}>단전</span>
+          <span style={blockTitleStyle}>
+            단전 <span style={{ fontWeight: 400, color: 'var(--color-text-tertiary)' }}>· 공자의 해설</span>
+          </span>
           <span style={accordionArrowStyle(judgOpen)}>▼</span>
         </button>
         <div style={accordionBodyStyle(judgOpen)}>
-          <div style={{ padding: '0 16px 16px' }}>
+          <div style={{ padding: '0 16px 16px', backgroundColor: 'var(--color-bg-elevated, #F2F4F6)', borderRadius: '0 0 12px 12px' }}>
             {/* {hexagram.judgmentOriginal && (
               <button style={toggleBtnStyle} onClick={() => toggle('judg')}>
                 {open.judg ? '원문 접기 ▲' : '원문 보기 ▼'}
@@ -164,15 +185,17 @@ export default function Interpretation({ hexagram }: InterpretationProps) {
       {/* 상전 — 아코디언 (기본 접힘) */}
       <div>
         <button
-          style={accordionHeaderStyle}
+          style={accordionHeaderStyle(imgOpen)}
           onClick={() => setImgOpen(o => !o)}
           aria-expanded={imgOpen}
         >
-          <span style={blockTitleStyle}>상전</span>
+          <span style={blockTitleStyle}>
+            상전 <span style={{ fontWeight: 400, color: 'var(--color-text-tertiary)' }}>· 삶의 지혜</span>
+          </span>
           <span style={accordionArrowStyle(imgOpen)}>▼</span>
         </button>
         <div style={accordionBodyStyle(imgOpen)}>
-          <div style={{ padding: '0 16px 16px' }}>
+          <div style={{ padding: '0 16px 16px', backgroundColor: 'var(--color-bg-elevated, #F2F4F6)', borderRadius: '0 0 12px 12px' }}>
             {/* {hexagram.imageOriginal && (
               <button style={toggleBtnStyle} onClick={() => toggle('img')}>
                 {open.img ? '원문 접기 ▲' : '원문 보기 ▼'}

@@ -32,7 +32,8 @@ export type Hexagram = {
   upperTrigram: string;  // 상괘 이름
   lowerTrigram: string;  // 하괘 이름
   keyword: string;       // 핵심 키워드
-  description: string;   // 괘사
+  description: string;   // 괘사 (해석/번역)
+  descriptionSimple?: string;   // 괘사 쉬운 설명 (현대적 보충 해석)
   descriptionOriginal?: string; // 괘사 원문 (한문)
   descriptionReading?: string;  // 괘사 독음 (한글)
   judgment: string;      // 단전

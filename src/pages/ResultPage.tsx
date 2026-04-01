@@ -86,7 +86,7 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
   const pageStyle: CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '16px',
     padding: '16px 16px 24px',
     backgroundColor: 'var(--color-bg-secondary)',
   };
@@ -162,50 +162,50 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
           )}
         </div>
 
-        {/* Card 2: 괘사 (Interpretation) + 변괘 토글 */}
+        {/* Card 2: 괘사 (Interpretation) */}
         <div style={{ ...cardStyle, ...animBlock(100) }}>
           <div style={{ ...sectionTitleStyle, display: 'flex', alignItems: 'center' }}>
             괘사
             <HelpIcon onClick={() => setHelpModal('hexagram')} />
           </div>
           <Interpretation hexagram={hexagram} />
-
-          {/* 변괘 토글 — only if changing hexagram exists */}
-          {changingHexagram && (
-            <div style={{ marginTop: '20px' }}>
-              <button
-                style={changingToggleBtnStyle}
-                onClick={() => setShowChanging(v => !v)}
-                aria-expanded={showChanging}
-              >
-                {showChanging ? '변괘 닫기 ▲' : '변괘 보기 ▼'}
-              </button>
-
-              {showChanging && (
-                <div role="region" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px', animation: 'slideUp 300ms ease both' }}>
-                  <div style={{ ...sectionTitleStyle, display: 'flex', alignItems: 'center' }}>
-                    변괘
-                    <HelpIcon onClick={() => setHelpModal('changingHex')} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                    <HexagramSymbol hexagram={changingHexagram} size="large" />
-                    <HexagramInfo hexagram={changingHexagram} />
-                  </div>
-                  <Interpretation hexagram={changingHexagram} />
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Card 3: 효사 (LineTexts) */}
         <div style={{ ...cardStyle, ...animBlock(200) }}>
           <div style={{ ...sectionTitleStyle, display: 'flex', alignItems: 'center' }}>
-            효사
+            효사 <span style={{ fontWeight: 400, fontSize: '12px', color: 'var(--color-text-tertiary)', marginLeft: '6px' }}>· 각 효의 의미</span>
             <HelpIcon onClick={() => setHelpModal('line')} />
           </div>
           <LineTexts hexagram={hexagram} highlightedLines={highlightedLines} />
         </div>
+
+        {/* Card 4: 변괘 (only when changing hexagram exists) */}
+        {changingHexagram && (
+          <div style={{ ...cardStyle, ...animBlock(300) }}>
+            <button
+              style={changingToggleBtnStyle}
+              onClick={() => setShowChanging(v => !v)}
+              aria-expanded={showChanging}
+            >
+              {showChanging ? '변괘 닫기 ▲' : '변괘 보기 ▼'}
+            </button>
+
+            {showChanging && (
+              <div role="region" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px', animation: 'slideUp 300ms ease both' }}>
+                <div style={{ ...sectionTitleStyle, display: 'flex', alignItems: 'center' }}>
+                  변괘
+                  <HelpIcon onClick={() => setHelpModal('changingHex')} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                  <HexagramSymbol hexagram={changingHexagram} size="large" />
+                  <HexagramInfo hexagram={changingHexagram} />
+                </div>
+                <Interpretation hexagram={changingHexagram} />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 배너 광고 (임시 비활성화) */}
         {/* <div

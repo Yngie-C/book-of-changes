@@ -45,20 +45,14 @@ export default function Layout({
   const mainStyle: CSSProperties = {
     flex: 1,
     overflowY: 'auto',
-    paddingBottom: bottomCTA ? '80px' : '0',
   };
 
   const bottomStyle: CSSProperties = {
-    position: 'fixed',
+    position: 'sticky',
     bottom: 0,
-    left: 0,
-    right: 0,
-    maxWidth: '480px',
-    margin: '0 auto',
-    padding: '12px 20px calc(12px + env(safe-area-inset-bottom, 0px))',
+    padding: '16px 20px calc(16px + env(safe-area-inset-bottom, 0px))',
     backgroundColor: 'var(--color-bg)',
     borderTop: '1px solid var(--color-divider)',
-    zIndex: 10,
   };
 
   return (
@@ -84,9 +78,10 @@ export default function Layout({
         </div>
       </header>
 
-      <main style={mainStyle}>{children}</main>
-
-      {bottomCTA && <div style={bottomStyle}>{bottomCTA}</div>}
+      <main style={mainStyle}>
+        {children}
+        {bottomCTA && <div style={bottomStyle}>{bottomCTA}</div>}
+      </main>
     </div>
   );
 }

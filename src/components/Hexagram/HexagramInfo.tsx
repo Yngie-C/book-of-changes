@@ -32,7 +32,7 @@ export default function HexagramInfo({ hexagram }: HexagramInfoProps) {
 
   const keywordStyle: CSSProperties = {
     display: 'inline-block',
-    padding: '4px 12px',
+    padding: '4px 14px',
     borderRadius: '9999px',
     backgroundColor: 'var(--color-primary-light)',
     color: 'var(--color-primary)',
