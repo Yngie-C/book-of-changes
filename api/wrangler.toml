@@ -3,7 +3,7 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 
 [vars]
-ALLOWED_ORIGIN = "https://tossmini.com"
+ALLOWED_ORIGIN = "https://*.tossmini.com"
 
 [[kv_namespaces]]
 binding = "RATE_LIMIT"
