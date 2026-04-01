@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { AiInterpretation, AiErrorType } from '@/lib/ai';
 import { requestAiInterpretation, AiError } from '@/lib/ai';
-import { preloadRewardedAd, showRewardedAdFireAndForget } from '@/lib/ads';
+import { preloadInterstitialAd, showInterstitialAd } from '@/lib/ads';
 
 export type AiState =
   | { status: 'idle' }
@@ -23,11 +23,11 @@ export function useAiInterpretation({
   const [state, setState] = useState<AiState>({ status: 'idle' });
   const abortRef = useRef<AbortController | null>(null);
 
-  // 광고 사전 로드 (마운트 시)
+  // 전면형 광고 사전 로드 (마운트 시)
   useEffect(() => {
     let cleanup: (() => void) | null = null;
 
-    preloadRewardedAd().then(c => {
+    preloadInterstitialAd().then(c => {
       cleanup = c;
     });
 
@@ -45,21 +45,25 @@ export function useAiInterpretation({
 
       setState({ status: 'processing' });
 
-      // 광고 fire-and-forget (결과 무시)
-      showRewardedAdFireAndForget();
+      // 전면형 광고 + AI 요청 병렬 처리
+      // 광고가 닫히고 AI 응답도 도착해야 결과 표시
+      const adPromise = new Promise<void>((resolve) => {
+        showInterstitialAd(resolve).catch(() => resolve());
+      });
 
-      // AI API 호출
+      const aiPromise = requestAiInterpretation(
+        {
+          hexagramNumber,
+          changingHexagramNumber: changingHexagramNumber ?? undefined,
+          highlightedLines,
+          situation,
+          category,
+        },
+        controller.signal,
+      );
+
       try {
-        const data = await requestAiInterpretation(
-          {
-            hexagramNumber,
-            changingHexagramNumber: changingHexagramNumber ?? undefined,
-            highlightedLines,
-            situation,
-            category,
-          },
-          controller.signal,
-        );
+        const [, data] = await Promise.all([adPromise, aiPromise]);
 
         if (!controller.signal.aborted) {
           setState({ status: 'success', data });
