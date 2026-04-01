@@ -1,5 +1,4 @@
 import type { ReactNode, CSSProperties } from 'react';
-import { Button } from '@toss/tds-mobile';
 
 type LayoutProps = {
   title: string;
@@ -59,16 +58,25 @@ export default function Layout({
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
       <header style={headerStyle}>
         {showBack ? (
-          <Button
-            color="light"
-            variant="weak"
-            size="small"
+          <button
             onClick={onBack}
             aria-label="뒤로가기"
-            style={{ minWidth: '40px', padding: 0 }}
+            style={{
+              minWidth: '40px',
+              height: '40px',
+              padding: 0,
+              border: 'none',
+              background: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            ←
-          </Button>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 6L9 12L15 18" stroke="var(--color-text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
         ) : (
           <div style={{ width: '40px' }} />
         )}
