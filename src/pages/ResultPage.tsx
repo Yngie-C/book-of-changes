@@ -12,7 +12,7 @@ import HexagramStack from '@/components/Hexagram/HexagramStack';
 import ChangingGuide from '@/components/Hexagram/ChangingGuide';
 import Interpretation from '@/components/Result/Interpretation';
 import LineTexts from '@/components/Result/LineTexts';
-import ShareButton from '@/components/common/ShareButton';
+// import ShareButton from '@/components/common/ShareButton';
 import HelpModal, { HelpIcon } from '@/components/common/HelpModal';
 import { HexagramHelp, LineTextsHelp, ChangingLineHelp, ChangingHexagramHelp } from '@/components/common/HelpContent';
 
@@ -59,18 +59,15 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
   // }, []);
 
   const bottomCTA = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <Button
-        color="primary"
-        variant="fill"
-        size="xlarge"
-        display="block"
-        onClick={onRestart}
-      >
-        다시 점치기
-      </Button>
-      <ShareButton hexagramName={hexagram?.name} />
-    </div>
+    <Button
+      color="primary"
+      variant="fill"
+      size="xlarge"
+      display="block"
+      onClick={onRestart}
+    >
+      다시 점치기
+    </Button>
   );
 
   if (!hexagram) {
