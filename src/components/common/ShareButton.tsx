@@ -1,68 +1,137 @@
-import { useState } from 'react';
+import { useState, type RefObject } from 'react';
 import type { CSSProperties } from 'react';
 import { Toast } from '@toss/tds-mobile';
-import { shareViaToss, isInTossApp } from '@/lib/toss';
+import html2canvas from 'html2canvas';
+import { shareViaToss, isInTossApp, createShareLink, saveImageToDevice } from '@/lib/toss';
 
 type ShareButtonProps = {
   hexagramName?: string;
+  hexagramKeyword?: string;
+  captureRef?: RefObject<HTMLDivElement | null>;
 };
 
-export default function ShareButton({ hexagramName }: ShareButtonProps) {
+export default function ShareButton({ hexagramName, hexagramKeyword, captureRef }: ShareButtonProps) {
+  const [toastText, setToastText] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleShare = async () => {
-    const title = '간편 운세 동전 주역점';
-    const text = hexagramName
-      ? `간편 운세 동전 주역점 결과: ${hexagramName}`
-      : '간편 운세 동전 주역점 결과';
-
-    // Try Toss share first (works inside Toss App)
-    if (isInTossApp()) {
-      const shared = await shareViaToss({ title, text });
-      if (shared) return;
-    }
-
-    // Web Share API fallback
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, text });
-        return;
-      } catch {
-        // user cancelled or not supported
-      }
-    }
-
-    // Clipboard fallback
-    await navigator.clipboard.writeText(text).catch(() => null);
+  const showMessage = (msg: string) => {
+    setToastText(msg);
     setShowToast(true);
   };
 
-  const btnStyle: CSSProperties = {
+  // 링크 공유: 결과 요약 텍스트 + 앱 링크
+  const handleShareLink = async () => {
+    const resultText = hexagramName
+      ? `${hexagramName}${hexagramKeyword ? ` — ${hexagramKeyword}` : ''}`
+      : '점괘 결과';
+
+    const shareLink = await createShareLink();
+    const message = `🪙 간편 운세 동전 주역점\n\n나의 점괘: ${resultText}\n\n나도 점쳐보기 👉 ${shareLink}`;
+
+    if (isInTossApp()) {
+      const shared = await shareViaToss({ title: '간편 운세 동전 주역점', text: message });
+      if (shared) return;
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: '간편 운세 동전 주역점', text: message });
+        return;
+      } catch {
+        // user cancelled
+      }
+    }
+
+    await navigator.clipboard.writeText(message).catch(() => null);
+    showMessage('결과가 클립보드에 복사되었어요');
+  };
+
+  // 이미지 저장: 결과 카드 캡처 → 기기 저장
+  const handleSaveImage = async () => {
+    if (!captureRef?.current) {
+      showMessage('캡처할 영역을 찾을 수 없어요');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const canvas = await html2canvas(captureRef.current, {
+        backgroundColor: '#F5F5F8',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const base64 = canvas.toDataURL('image/png');
+      const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const fileName = `divination-${timestamp}.png`;
+
+      const saved = await saveImageToDevice(base64, fileName);
+      if (saved) {
+        showMessage('이미지가 저장되었어요');
+      } else {
+        showMessage('이미지 저장에 실패했어요');
+      }
+    } catch {
+      showMessage('이미지 생성에 실패했어요');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const containerStyle: CSSProperties = {
+    display: 'flex',
+    gap: '8px',
+    width: '100%',
+    marginTop: '8px',
+  };
+
+  const btnBase: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '6px',
-    width: '100%',
-    padding: '16px',
+    flex: 1,
+    padding: '14px 12px',
     borderRadius: '12px',
+    fontSize: '15px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    minHeight: '44px',
+    transition: 'opacity 150ms ease',
+  };
+
+  const linkBtnStyle: CSSProperties = {
+    ...btnBase,
+    border: '1.5px solid var(--color-primary)',
+    backgroundColor: 'var(--color-primary)',
+    color: '#fff',
+  };
+
+  const imageBtnStyle: CSSProperties = {
+    ...btnBase,
     border: '1.5px solid var(--color-border)',
     backgroundColor: 'var(--color-bg)',
     color: 'var(--color-text-secondary)',
-    fontSize: '16px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    marginTop: '8px',
+    opacity: saving ? 0.6 : 1,
+    pointerEvents: saving ? 'none' : 'auto',
   };
 
   return (
     <>
-      <button style={btnStyle} onClick={handleShare}>
-        공유하기
-      </button>
+      <div style={containerStyle}>
+        <button style={linkBtnStyle} onClick={handleShareLink}>
+          공유하기
+        </button>
+        <button style={imageBtnStyle} onClick={handleSaveImage} disabled={saving}>
+          {saving ? '저장 중...' : '이미지 저장'}
+        </button>
+      </div>
       <Toast
         open={showToast}
         position="bottom"
-        text="결과가 클립보드에 복사되었어요"
+        text={toastText}
         onClose={() => setShowToast(false)}
       />
     </>

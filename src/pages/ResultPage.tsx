@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import { Button } from '@toss/tds-mobile';
 import type { DivinationSession } from '@/data/types';
@@ -12,7 +12,7 @@ import HexagramStack from '@/components/Hexagram/HexagramStack';
 import ChangingGuide from '@/components/Hexagram/ChangingGuide';
 import Interpretation from '@/components/Result/Interpretation';
 import LineTexts from '@/components/Result/LineTexts';
-// import ShareButton from '@/components/common/ShareButton';
+import ShareButton from '@/components/common/ShareButton';
 import HelpModal, { HelpIcon } from '@/components/common/HelpModal';
 import { HexagramHelp, LineTextsHelp, ChangingLineHelp, ChangingHexagramHelp } from '@/components/common/HelpContent';
 
@@ -31,6 +31,7 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
   const [showChanging, setShowChanging] = useState(false);
   // const [showAi, setShowAi] = useState(false);
   const [helpModal, setHelpModal] = useState<'hexagram' | 'line' | 'changing' | 'changingHex' | null>(null);
+  const captureRef = useRef<HTMLDivElement>(null);
 
   const highlightedLines = interpretationRule?.highlightedLines ?? [];
 
@@ -141,7 +142,7 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
   return (
     <Layout title="점괘 결과" showBack onBack={onBack} bottomCTA={bottomCTA}>
       <div style={pageStyle}>
-
+        <div ref={captureRef}>
         {/* Card 1: 괘 정보 + 효 구성 + 변효 가이드 */}
         <div style={{ ...cardStyle, ...animBlock(0) }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
@@ -167,6 +168,15 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
           </div>
           <Interpretation hexagram={hexagram} />
         </div>
+
+        </div>{/* end captureRef */}
+
+        {/* 공유 버튼 */}
+        <ShareButton
+          hexagramName={hexagram.name}
+          hexagramKeyword={hexagram.keyword}
+          captureRef={captureRef}
+        />
 
         {/* Card 3: 효사 (LineTexts) */}
         <div style={{ ...cardStyle, ...animBlock(200) }}>

@@ -4,7 +4,7 @@
  * 로그인 불필요: 사용자 데이터를 수집하지 않는 순수 클라이언트 앱
  */
 
-import { share, closeView } from '@apps-in-toss/web-framework';
+import { share, closeView, getTossShareLink, saveBase64Data } from '@apps-in-toss/web-framework';
 
 // 토스 앱 환경 감지
 export function isInTossApp(): boolean {
@@ -49,6 +49,48 @@ export function closeTossApp(): void {
     });
   } else {
     window.history.back();
+  }
+}
+
+// 토스 공유 링크 생성
+export async function createShareLink(path?: string): Promise<string> {
+  const deepLink = path ?? 'intoss://book-of-changes';
+  if (isInTossApp()) {
+    try {
+      return await getTossShareLink(deepLink);
+    } catch {
+      return 'https://minion.toss.im/dtLlHFID';
+    }
+  }
+  return 'https://minion.toss.im/dtLlHFID';
+}
+
+// 이미지 기기 저장 (Base64 → 갤러리)
+export async function saveImageToDevice(base64Data: string, fileName: string): Promise<boolean> {
+  if (isInTossApp()) {
+    try {
+      // data:image/png;base64, 프리픽스 제거
+      const pureBase64 = base64Data.replace(/^data:image\/\w+;base64,/, '');
+      await saveBase64Data({
+        data: pureBase64,
+        fileName,
+        mimeType: 'image/png',
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // 토스 외부: 다운로드 링크로 폴백
+  try {
+    const link = document.createElement('a');
+    link.href = base64Data;
+    link.download = fileName;
+    link.click();
+    return true;
+  } catch {
+    return false;
   }
 }
 

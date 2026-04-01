@@ -9,8 +9,8 @@ type HomePageProps = {
 
 const QUESTION_GROUPS = [
   ['이번 투자, 해도 될까?', '오늘 소개팅, 좋은 인연일까?', '이번 주 나의 운세는?'],
-  ['이 프로젝트, 잘 마무리될까?', '이직, 지금이 맞을까?'],
-  ['이 선택, 후회 없을까?', '시험 결과, 어떻게 될까?', '우리 사이, 앞으로 어떨까?'],
+  ['이 프로젝트, 잘 마무리될까?', '이직, 지금이 맞을까?', '이 선택, 후회 없을까?'],
+  ['시험 결과, 어떻게 될까?', '우리 사이, 앞으로 어떨까?', '오늘 하루, 어떤 날일까?'],
 ];
 
 const ACCORDION_SECTIONS = [
@@ -34,18 +34,24 @@ const ACCORDION_SECTIONS = [
 export default function HomePage({ onStart }: HomePageProps) {
   const [openSections, setOpenSections] = useState<Set<number>>(new Set());
   const [groupIndex, setGroupIndex] = useState(0);
-  const [opacity, setOpacity] = useState(1);
+  const [visible, setVisible] = useState(true);
+  const [pendingNext, setPendingNext] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setOpacity(0);
-      setTimeout(() => {
-        setGroupIndex(prev => (prev + 1) % QUESTION_GROUPS.length);
-        setOpacity(1);
-      }, 400);
-    }, 3500);
+      setVisible(false);
+      setPendingNext(true);
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleTransitionEnd = () => {
+    if (pendingNext) {
+      setPendingNext(false);
+      setGroupIndex(prev => (prev + 1) % QUESTION_GROUPS.length);
+      setVisible(true);
+    }
+  };
 
   const toggleSection = (index: number) => {
     setOpenSections(prev => {
@@ -128,7 +134,7 @@ export default function HomePage({ onStart }: HomePageProps) {
 
         <div
           style={{
-            minHeight: '72px',
+            minHeight: '68px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -142,16 +148,17 @@ export default function HomePage({ onStart }: HomePageProps) {
               flexWrap: 'wrap',
               justifyContent: 'center',
               gap: '8px',
-              opacity,
-              transition: 'opacity 400ms ease',
+              opacity: visible ? 1 : 0,
+              transition: 'opacity 500ms ease',
             }}
+            onTransitionEnd={handleTransitionEnd}
           >
             {QUESTION_GROUPS[groupIndex].map((question) => (
               <span
                 key={question}
                 style={{
-                  backgroundColor: 'var(--color-bg-secondary)',
-                  color: 'var(--color-text-secondary)',
+                  backgroundColor: 'var(--color-primary-light)',
+                  color: 'var(--color-primary)',
                   fontSize: '13px',
                   borderRadius: '999px',
                   padding: '6px 12px',
