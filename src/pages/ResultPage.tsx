@@ -221,8 +221,8 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
           aria-label="광고"
         /> */}
 
-        {/* AI 맞춤 해석 섹션 */}
-        <div style={{ ...cardStyle, ...animBlock(400) }}>
+        {/* AI 맞춤 해석 섹션 — 임시 비활성화 (오류 수정 전까지) */}
+        {/* <div style={{ ...cardStyle, ...animBlock(400) }}>
           <button
             style={aiToggleBtnStyle}
             onClick={() => setShowAi(v => !v)}
@@ -262,7 +262,7 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
               </div>
             </Suspense>
           )}
-        </div>
+        </div> */}
       </div>
 
       {/* Help Modals */}

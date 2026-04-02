@@ -53,10 +53,9 @@ describe('getChangingHexagram', () => {
 
   it('single changing line: lower yang→yin changes to different hexagram', () => {
     // Start: all yang (hexagram 1). Change line 1 (yang→yin).
-    // lines[0]=yin, lines[1]=yang, lines[2]=yang
-    // bit0=0, bit1=1, bit2=1 → index = 6 = 태
+    // changed lower: [yin, yang, yang] → 손(index 3)
     // upper: [yang, yang, yang] = 건(index 7)
-    // 건(天) over 태(澤) = 天澤履 = #10
+    // 건(天) over 손(風) = 天風姤 = #44
     const lines: LineResult[] = [
       makeLine('yang', true),  // line 1 changes: yang → yin
       makeLine('yang', false), // line 2
@@ -65,7 +64,7 @@ describe('getChangingHexagram', () => {
       makeLine('yang', false), // line 5
       makeLine('yang', false), // line 6
     ];
-    expect(getChangingHexagram(lines)).toBe(10);
+    expect(getChangingHexagram(lines)).toBe(44);
   });
 
   it('non-changing lines are preserved as-is in the changed hexagram', () => {
