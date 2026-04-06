@@ -99,7 +99,7 @@ export async function preloadRewardedAd(adGroupId: string = AD_GROUP_ID): Promis
       adGroupId,
       type: 'rewarded',
       onLoaded: () => {
-        trackEvent('ad_preloaded', { adGroupId });
+        trackEvent('ad_preloaded', 'event', { adGroupId });
       },
       onError: () => {
         // 조용히 무시 — fire-and-forget
@@ -129,10 +129,10 @@ export function showRewardedAdFireAndForget(adGroupId: string = AD_GROUP_ID): vo
         adGroupId,
         type: 'rewarded',
         onRewarded: () => {
-          trackEvent('ad_rewarded', { adGroupId });
+          trackEvent('ad_rewarded', 'event', { adGroupId });
         },
         onDismissed: () => {
-          trackEvent('ad_dismissed', { adGroupId });
+          trackEvent('ad_dismissed', 'event', { adGroupId });
         },
         onError: () => {
           // 조용히 무시
@@ -162,7 +162,7 @@ export async function preloadInterstitialAd(
       options: { adGroupId },
       onEvent: (event) => {
         if (event.type === 'loaded') {
-          trackEvent('interstitial_preloaded', { adGroupId });
+          trackEvent('interstitial_preloaded', 'event', { adGroupId });
         }
       },
       onError: () => {
@@ -202,7 +202,7 @@ export async function showInterstitialAd(
     shower({
       options: { adGroupId },
       onEvent: (event) => {
-        trackEvent('interstitial_event', { adGroupId, type: event.type });
+        trackEvent('interstitial_event', 'event', { adGroupId, type: event.type });
         if (event.type === 'dismissed' || event.type === 'failedToShow') {
           finish();
         }
@@ -256,7 +256,7 @@ export async function attachBannerAd(
       ads.initialize({
         callbacks: {
           onInitialized: () => {
-            trackEvent('toss_ads_initialized');
+            trackEvent('toss_ads_initialized', 'event');
           },
         },
       });
@@ -268,10 +268,10 @@ export async function attachBannerAd(
       variant: 'card',
       callbacks: {
         onAdRendered: () => {
-          trackEvent('banner_rendered', { adGroupId });
+          trackEvent('banner_rendered', 'event', { adGroupId });
         },
         onAdFailedToRender: () => {
-          trackEvent('banner_failed', { adGroupId });
+          trackEvent('banner_failed', 'event', { adGroupId });
         },
       },
     });

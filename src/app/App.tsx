@@ -1,4 +1,5 @@
 import { useState, useRef, lazy, Suspense } from 'react';
+import { trackEvent } from '@/lib/toss';
 import type { CSSProperties } from 'react';
 import type { PageRoute } from '@/data/types';
 import { useDivination } from '@/hooks/useDivination';
@@ -43,6 +44,7 @@ export default function App() {
   };
 
   const handleRestart = () => {
+    trackEvent('restart', 'click');
     reset();
     navigate('home');
   };

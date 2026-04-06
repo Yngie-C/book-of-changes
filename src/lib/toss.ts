@@ -4,7 +4,7 @@
  * 로그인 불필요: 사용자 데이터를 수집하지 않는 순수 클라이언트 앱
  */
 
-import { share, closeView, getTossShareLink, saveBase64Data } from '@apps-in-toss/web-framework';
+import { share, closeView, getTossShareLink, saveBase64Data, setClipboardText, Analytics } from '@apps-in-toss/web-framework';
 
 // 토스 앱 환경 감지
 export function isInTossApp(): boolean {
@@ -13,32 +13,47 @@ export function isInTossApp(): boolean {
          window.location.hostname.includes('tossmini.com');
 }
 
-// 공유 기능 (Granite SDK bridge)
+// 공유 기능 (3단계 폴백: SDK share → Web Share API → 클립보드)
 export async function shareViaToss(params: {
   title: string;
   text: string;
-  imageUrl?: string;
-}): Promise<boolean> {
-  // 토스 앱 내부: SDK share API 사용
+}): Promise<'shared' | 'clipboard' | 'failed'> {
+  const message = `${params.title}\n${params.text}`;
+
+  // 1차: 토스 SDK share
   if (isInTossApp()) {
     try {
-      await share({ message: `${params.title}\n${params.text}` });
-      return true;
-    } catch {
-      return false;
+      await share({ message });
+      return 'shared';
+    } catch (err) {
+      trackEvent('share_sdk_error', 'event', { error: String(err) });
     }
   }
 
-  // 토스 앱 외부: Web Share API 폴백
-  if (navigator.share) {
+  // 2차: Web Share API 폴백
+  if (typeof navigator !== 'undefined' && navigator.share) {
     try {
       await navigator.share({ title: params.title, text: params.text });
-      return true;
-    } catch {
-      return false;
+      return 'shared';
+    } catch (err) {
+      // 사용자가 명시적으로 취소한 경우 클립보드 폴백 안 함
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return 'failed';
+      }
     }
   }
-  return false;
+
+  // 3차: 클립보드 복사 폴백
+  try {
+    if (isInTossApp()) {
+      await setClipboardText(message);
+    } else {
+      await navigator.clipboard.writeText(message);
+    }
+    return 'clipboard';
+  } catch {
+    return 'failed';
+  }
 }
 
 // 앱 닫기 (Granite SDK bridge)
@@ -52,12 +67,17 @@ export function closeTossApp(): void {
   }
 }
 
+// OG 이미지 URL (토스 콘솔에 업로드 후 실제 URL로 교체)
+const OG_IMAGE_URL = '';
+
 // 토스 공유 링크 생성
 export async function createShareLink(path?: string): Promise<string> {
   const deepLink = path ?? 'intoss://book-of-changes';
   if (isInTossApp()) {
     try {
-      return await getTossShareLink(deepLink);
+      return OG_IMAGE_URL
+        ? await getTossShareLink(deepLink, OG_IMAGE_URL)
+        : await getTossShareLink(deepLink);
     } catch {
       return 'https://minion.toss.im/dtLlHFID';
     }
@@ -94,9 +114,34 @@ export async function saveImageToDevice(base64Data: string, fileName: string): P
   }
 }
 
-// 이벤트 추적 (향후 analytics 연동 예정)
-export function trackEvent(event: string, params?: Record<string, string>): void {
-  if (process.env.NODE_ENV !== 'production') {
-    console.debug('[toss:track]', event, params);
+// 이벤트 추적 (토스 Analytics SDK 연동)
+type LogType = 'screen' | 'click' | 'impression' | 'event';
+
+export function trackEvent(
+  logName: string,
+  logType: LogType = 'event',
+  params?: Record<string, string | number | boolean>,
+): void {
+  const mergedParams = { log_name: logName, ...params };
+  try {
+    switch (logType) {
+      case 'screen':
+        Analytics.screen(mergedParams);
+        break;
+      case 'click':
+        Analytics.click(mergedParams);
+        break;
+      case 'impression':
+        Analytics.impression(mergedParams);
+        break;
+      default:
+        // 'event' — Analytics.click을 범용 이벤트로 사용
+        Analytics.click(mergedParams);
+        break;
+    }
+  } catch {
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[toss:track]', logName, logType, params);
+    }
   }
 }

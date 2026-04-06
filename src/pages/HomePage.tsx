@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { trackEvent } from '@/lib/toss';
 import type { CSSProperties } from 'react';
 import { Button } from '@toss/tds-mobile';
 import Layout from '@/components/common/Layout';
@@ -36,6 +37,10 @@ export default function HomePage({ onStart }: HomePageProps) {
   const [groupIndex, setGroupIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const [pendingNext, setPendingNext] = useState(false);
+
+  useEffect(() => {
+    trackEvent('page_view_home', 'screen');
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -176,7 +181,10 @@ export default function HomePage({ onStart }: HomePageProps) {
           variant="fill"
           size="xlarge"
           display="block"
-          onClick={onStart}
+          onClick={() => {
+            trackEvent('divination_start', 'click');
+            onStart();
+          }}
           style={{ maxWidth: '320px', width: '100%' }}
         >
           점 시작하기

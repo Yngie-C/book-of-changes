@@ -2,7 +2,7 @@ import { useState, type RefObject } from 'react';
 import type { CSSProperties } from 'react';
 import { Toast } from '@toss/tds-mobile';
 import html2canvas from 'html2canvas';
-import { shareViaToss, isInTossApp, createShareLink, saveImageToDevice } from '@/lib/toss';
+import { shareViaToss, createShareLink, saveImageToDevice, trackEvent } from '@/lib/toss';
 
 type ShareButtonProps = {
   hexagramName?: string;
@@ -22,33 +22,29 @@ export default function ShareButton({ hexagramName, hexagramKeyword, captureRef 
 
   // 링크 공유: 결과 요약 텍스트 + 앱 링크
   const handleShareLink = async () => {
+    trackEvent('share_attempt', 'click', { type: 'link' });
+
     const resultText = hexagramName
       ? `${hexagramName}${hexagramKeyword ? ` — ${hexagramKeyword}` : ''}`
       : '점괘 결과';
 
     const shareLink = await createShareLink();
-    const message = `🪙 간편 운세 동전 주역점\n\n나의 점괘: ${resultText}\n\n나도 점쳐보기 👉 ${shareLink}`;
+    const message = `나의 점괘: ${resultText}\n\n나도 점쳐보기 👉 ${shareLink}`;
 
-    if (isInTossApp()) {
-      const shared = await shareViaToss({ title: '간편 운세 동전 주역점', text: message });
-      if (shared) return;
+    const result = await shareViaToss({ title: '🪙 간편 운세 동전 주역점', text: message });
+
+    if (result === 'clipboard') {
+      showMessage('결과가 클립보드에 복사되었어요');
+    } else if (result === 'failed') {
+      showMessage('공유에 실패했어요');
     }
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: '간편 운세 동전 주역점', text: message });
-        return;
-      } catch {
-        // user cancelled
-      }
-    }
-
-    await navigator.clipboard.writeText(message).catch(() => null);
-    showMessage('결과가 클립보드에 복사되었어요');
+    trackEvent('share_result', 'event', { type: 'link', result });
   };
 
   // 이미지 저장: 결과 카드 캡처 → 기기 저장
   const handleSaveImage = async () => {
+    trackEvent('image_save_attempt', 'click');
+
     if (!captureRef?.current) {
       showMessage('캡처할 영역을 찾을 수 없어요');
       return;
@@ -70,11 +66,14 @@ export default function ShareButton({ hexagramName, hexagramKeyword, captureRef 
       const saved = await saveImageToDevice(base64, fileName);
       if (saved) {
         showMessage('이미지가 저장되었어요');
+        trackEvent('image_save_success', 'event');
       } else {
         showMessage('이미지 저장에 실패했어요');
+        trackEvent('image_save_fail', 'event');
       }
     } catch {
       showMessage('이미지 생성에 실패했어요');
+      trackEvent('image_save_fail', 'event');
     } finally {
       setSaving(false);
     }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { trackEvent } from '@/lib/toss';
 import type { CSSProperties } from 'react';
 import { Button, AlertDialog } from '@toss/tds-mobile';
 import type { DivinationSession, LineResult } from '@/data/types';
@@ -35,6 +36,10 @@ export default function DivinationPage({
     return () => { cleanup?.(); };
   }, []);
 
+  useEffect(() => {
+    trackEvent('page_view_divination', 'screen');
+  }, []);
+
   // When coin toss result arrives, add it to session
   useEffect(() => {
     if (result && !resultHandled.current) {
@@ -54,6 +59,10 @@ export default function DivinationPage({
   useEffect(() => {
     if (session.isComplete && !completeCalled.current) {
       completeCalled.current = true;
+      trackEvent('divination_complete', 'event', {
+        hexagram_number: String(session.hexagramNumber ?? ''),
+        has_changing: String(session.changingLineCount > 0),
+      });
       setTimeout(() => {
         showInterstitialAd(() => {
           onComplete();

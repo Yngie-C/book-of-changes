@@ -116,14 +116,10 @@ describe('HEXAGRAMS data integrity', () => {
     });
   });
 
-  it('descriptionSimple은 description과 같거나 description의 원문 부분을 제외한 내용이다', () => {
-    // 분리된 경우: descriptionSimple !== description (약 31개 괘)
-    // 미분리(전체 캐주얼) 경우: descriptionSimple === description (약 33개 괘)
-    const splitCount = hexagrams.filter(h => h.descriptionSimple !== h.description).length;
-    const sameCount = hexagrams.filter(h => h.descriptionSimple === h.description).length;
-    expect(splitCount + sameCount).toBe(64);
-    expect(splitCount).toBeGreaterThan(20); // at least 20+ hexagrams have actual splits
-    expect(sameCount).toBeGreaterThan(20);  // at least 20+ hexagrams are all-casual
+  it('모든 괘의 descriptionSimple은 description과 다르다 (고전 해석과 쉬운 설명이 분리됨)', () => {
+    hexagrams.forEach((hex) => {
+      expect(hex.descriptionSimple).not.toBe(hex.description);
+    });
   });
 
   it('분리된 괘의 description은 캐주얼 마커(~요)로 끝나지 않는다', () => {
