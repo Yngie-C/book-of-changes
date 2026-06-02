@@ -56,7 +56,39 @@ export type DivinationSession = {
 };
 
 // 화면 라우팅 상태
-export type PageRoute = 'home' | 'divination' | 'result';
+export type PageRoute = 'home' | 'divination' | 'result' | 'history';
+
+// 점술 기록 (localStorage 저장용)
+export interface DivinationRecord {
+  id: string;                         // UUID
+  timestamp: string;                  // 점술 실행 일시 (ISO 8601)
+  mainHexagram: string;               // 본괘 번호 및 이름 (예: "1. 건(乾)")
+  changingHexagram: string | null;    // 변괘 번호 및 이름, 변효 없으면 null
+  changingLines: number[];            // 변효 위치 (1-6 중 0~6개)
+  aiInterpretation?: string;          // AI 해석 전문, 없으면 빈 문자열
+  userQuestion?: string;              // 사용자 질문, 없으면 빈 문자열
+  freeMemo?: string;                  // 자유 메모, 없으면 빈 문자열
+  lastViewedAt?: string | null;       // 마지막 조회 일시 (ISO 8601), 미조회 시 null
+  viewCount: number;                  // 기록 상세 조회 횟수, 생성 시 0
+  createdAt: string;                  // 생성 일시 (ISO 8601)
+  updatedAt: string;                  // 마지막 수정 일시 (ISO 8601)
+}
+
+// 기록 생성 입력 타입 (id/timestamps/viewCount는 자동 생성)
+export type CreateRecordInput = Pick<
+  DivinationRecord,
+  'mainHexagram' | 'changingLines'
+> & {
+  changingHexagram?: string | null;
+  aiInterpretation?: string;
+  userQuestion?: string;
+};
+
+// 기록 수정 입력 타입
+export type UpdateRecordInput = Pick<
+  DivinationRecord,
+  'freeMemo'
+>;
 
 // 해석 규칙 결과
 export type InterpretationResult = {

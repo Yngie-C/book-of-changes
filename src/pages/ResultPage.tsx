@@ -20,6 +20,10 @@ import { HexagramHelp, LineTextsHelp, ChangingLineHelp, ChangingHexagramHelp } f
 // AI 컴포넌트는 이중 lazy loading (초기 번들 미증가)
 const AiInputForm = lazy(() => import('@/components/Result/AiInputForm'));
 const AiInterpretationCard = lazy(() => import('@/components/Result/AiInterpretationCard'));
+const SaveButton = lazy(() => import('@/components/History/SaveButton'));
+
+import { useSaveDivination } from '@/hooks/useSaveDivination';
+import type { SaveButtonStatus } from '@/components/History/SaveButton';
 
 type ResultPageProps = {
   session: DivinationSession;
@@ -50,7 +54,28 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
     highlightedLines,
   });
 
+  const saveHook = useSaveDivination();
+
   const lastInputRef = useRef<{ situation: string; category: string } | null>(null);
+
+  const handleSave = async () => {
+    if (!hexagram) return;
+    await saveHook.save({
+      mainHexagram: `${hexagram.number}. ${hexagram.name}(${hexagram.chinese})`,
+      changingLines: session.lines
+        .map((line, i) => (line.changing ? i + 1 : null))
+        .filter((n): n is number => n !== null),
+      changingHexagram: changingHexagram && session.changingHexagramNumber
+        ? `${session.changingHexagramNumber}. ${changingHexagram.name}(${changingHexagram.chinese})`
+        : undefined,
+    });
+  };
+
+  const saveStatus: SaveButtonStatus =
+    saveHook.state.status === 'loading' ? 'loading'
+    : saveHook.state.status === 'success' ? 'success'
+    : saveHook.state.status === 'error' ? 'error'
+    : 'idle';
 
   // 배너 광고 (임시 비활성화)
   // const bannerCleanupRef = useRef<(() => void) | null>(null);
@@ -187,6 +212,26 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
           hexagramKeyword={hexagram.keyword}
           captureRef={captureRef}
         /> */}
+
+        {/* Card 2.5: 예측 저장 */}
+        <div style={{ ...cardStyle, ...animBlock(150) }}>
+          <div style={{ ...sectionTitleStyle }}>기록 남기기</div>
+          <p style={{
+            fontSize: '14px',
+            color: 'var(--color-text-secondary)',
+            marginBottom: '12px',
+            lineHeight: 1.6,
+          }}>
+            이 점괘 결과를 저장하고 나중에 다시 확인할 수 있어요.
+          </p>
+          <Suspense fallback={<span style={{ fontSize: '14px', color: 'var(--color-text-tertiary)' }}>불러오는 중...</span>}>
+            <SaveButton
+              saveStatus={saveStatus}
+              onClick={handleSave}
+              saveLabel="이 예측 저장하기"
+            />
+          </Suspense>
+        </div>
 
         {/* Card 3: 효사 (LineTexts) */}
         <div style={{ ...cardStyle, ...animBlock(200) }}>
