@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import type { AiInterpretation, AiErrorType } from '@/lib/ai';
 import { requestAiInterpretation, AiError } from '@/lib/ai';
 import { preloadInterstitialAd, showInterstitialAd } from '@/lib/ads';
+import { isInTossApp } from '@/lib/toss';
 
 export type AiState =
   | { status: 'idle' }
@@ -23,8 +24,9 @@ export function useAiInterpretation({
   const [state, setState] = useState<AiState>({ status: 'idle' });
   const abortRef = useRef<AbortController | null>(null);
 
-  // 전면형 광고 사전 로드 (마운트 시)
+  // 전면형 광고 사전 로드 (마운트 시 — 토스 앱 환경에서만)
   useEffect(() => {
+    if (!isInTossApp()) return;
     let cleanup: (() => void) | null = null;
 
     preloadInterstitialAd().then(c => {

@@ -96,7 +96,8 @@ export async function saveImageToDevice(base64Data: string, fileName: string): P
 
 // 이벤트 추적 (향후 analytics 연동 예정)
 export function trackEvent(event: string, params?: Record<string, string>): void {
-  if (process.env.NODE_ENV !== 'production') {
+  // Toss WebView 환경에서는 process.env가 없으므로 제거
+  if (typeof window !== 'undefined' && window.console?.debug) {
     console.debug('[toss:track]', event, params);
   }
 }

@@ -2,7 +2,7 @@
  * AI 맞춤 해석 API 클라이언트
  */
 
-const API_BASE_URL = process.env.PUBLIC_AI_API_URL ?? '';
+const API_BASE_URL = ''; // AI API URL — 환경 변수 주입 불가 (Toss WebView에는 process.env 없음)
 
 export type AiErrorType = 'timeout' | 'network' | 'server' | 'rate-limited' | 'invalid-response';
 
