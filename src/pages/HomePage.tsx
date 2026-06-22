@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { trackEvent } from '@/lib/toss';
 import type { CSSProperties } from 'react';
 import { Button } from '@toss/tds-mobile';
 import Layout from '@/components/common/Layout';
 
 type HomePageProps = {
   onStart: () => void;
+  onHistory: () => void;
 };
 
 const QUESTION_GROUPS = [
@@ -31,11 +33,15 @@ const ACCORDION_SECTIONS = [
   },
 ];
 
-export default function HomePage({ onStart }: HomePageProps) {
+export default function HomePage({ onStart, onHistory }: HomePageProps) {
   const [openSections, setOpenSections] = useState<Set<number>>(new Set());
   const [groupIndex, setGroupIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const [pendingNext, setPendingNext] = useState(false);
+
+  useEffect(() => {
+    trackEvent('page_view_home', 'screen');
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -176,11 +182,40 @@ export default function HomePage({ onStart }: HomePageProps) {
           variant="fill"
           size="xlarge"
           display="block"
-          onClick={onStart}
+          onClick={() => {
+            trackEvent('divination_start', 'click');
+            onStart();
+          }}
           style={{ maxWidth: '320px', width: '100%' }}
         >
           점 시작하기
         </Button>
+
+        <button
+          onClick={() => {
+            trackEvent('history_view', 'click');
+            onHistory();
+          }}
+          style={{
+            maxWidth: '320px',
+            width: '100%',
+            height: '48px',
+            borderRadius: '12px',
+            border: '1.5px solid #6B5CE7',
+            backgroundColor: 'transparent',
+            color: '#6B5CE7',
+            fontSize: '16px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+            margin: '0 auto',
+          }}
+        >
+          📋 기록 보기
+        </button>
 
         <div style={accordionWrapperStyle}>
           {ACCORDION_SECTIONS.map((section, index) => {

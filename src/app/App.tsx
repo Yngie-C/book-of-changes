@@ -1,18 +1,22 @@
 import { useState, useRef, lazy, Suspense } from 'react';
+import { trackEvent } from '@/lib/toss';
 import type { CSSProperties } from 'react';
 import type { PageRoute } from '@/data/types';
 import { useDivination } from '@/hooks/useDivination';
 import HomePage from '@/pages/HomePage';
 import DivinationPage from '@/pages/DivinationPage';
 const ResultPage = lazy(() => import('@/pages/ResultPage'));
+const HistoryListPage = lazy(() => import('@/pages/HistoryListPage'));
 
 // Animation class per transition direction
 const PAGE_ANIMATIONS: Record<string, string> = {
   'home→divination': 'slideInRight',
   'home→result': 'slideInRight',
+  'home→history': 'slideInRight',
   'divination→result': 'slideInRight',
   'result→home': 'slideInLeft',
   'divination→home': 'slideInLeft',
+  'history→home': 'slideInLeft',
 };
 
 function getAnimationStyle(from: PageRoute, to: PageRoute): CSSProperties {
@@ -43,6 +47,7 @@ export default function App() {
   };
 
   const handleRestart = () => {
+    trackEvent('restart', 'click');
     reset();
     navigate('home');
   };
@@ -52,13 +57,17 @@ export default function App() {
     navigate('home');
   };
 
+  const handleViewHistory = () => {
+    navigate('history');
+  };
+
   const animStyle = getAnimationStyle(prevPageRef.current, page);
 
   switch (page) {
     case 'home':
       return (
         <div key="home" style={animStyle}>
-          <HomePage onStart={handleStart} />
+          <HomePage onStart={handleStart} onHistory={handleViewHistory} />
         </div>
       );
     case 'divination':
@@ -81,6 +90,14 @@ export default function App() {
               onRestart={handleRestart}
               onBack={handleBackToHome}
             />
+          </div>
+        </Suspense>
+      );
+    case 'history':
+      return (
+        <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh' }}>로딩 중...</div>}>
+          <div key="history" style={animStyle}>
+            <HistoryListPage onBack={handleBackToHome} />
           </div>
         </Suspense>
       );
