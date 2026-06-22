@@ -112,7 +112,7 @@ export function trackEvent(
     mergedParams = logTypeOrParams;
   }
 
-  if (typeof window !== 'undefined' && window.console?.debug) {
+  if (typeof window !== 'undefined') {
     console.debug('[toss:track]', logType, logName, mergedParams);
   }
 }

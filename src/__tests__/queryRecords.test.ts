@@ -110,9 +110,9 @@ describe('queryRecords', () => {
     const r1 = makeRecord({ mainHexagram: '1. 건(乾)', timestamp: timestamp(0) });
     makeRecord({ mainHexagram: '2. 곤(坤)', timestamp: timestamp(10) });
 
-    const records = [r1, r1]; // all records returned by storage
+    const _records = [r1, r1]; // all records returned by storage
     // Use loadRecords for accuracy
-    const allRecords = [r1, makeRecord({ mainHexagram: '2. 곤(坤)', timestamp: timestamp(10) })];
+    const _allRecords = [r1, makeRecord({ mainHexagram: '2. 곤(坤)', timestamp: timestamp(10) })];
     // Actually just use loadRecords
     clearRecords();
     const a = makeRecord({ mainHexagram: '1. 건(乾)', timestamp: timestamp(0) });

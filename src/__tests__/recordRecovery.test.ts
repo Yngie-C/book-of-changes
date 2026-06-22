@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { recoverRecord, recoverRecords } from '@/lib/recordRecovery';
-import type { RecoveryWarning, RecoveryResult } from '@/lib/recordRecovery';
+import type { RecoveryWarning, RecoveryResult as _RecoveryResult } from '@/lib/recordRecovery';
 import type { DivinationRecord } from '@/data/types';
 
 // ─── Test Fixtures ───────────────────────────────────────────────────────────
