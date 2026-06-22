@@ -24,7 +24,9 @@ import { HexagramHelp, LineTextsHelp, ChangingLineHelp, ChangingHexagramHelp } f
 // SaveButton은 직접 import (중첩 lazy 방지: App→ResultPage→SaveButton)
 import SaveButton from '@/components/History/SaveButton';
 import type { SaveButtonStatus } from '@/components/History/SaveButton';
+import MemoEditor from '@/components/History/MemoEditor';
 import { useSaveDivination } from '@/hooks/useSaveDivination';
+import { updateRecord } from '@/lib/storage';
 
 type ResultPageProps = {
   session: DivinationSession;
@@ -214,24 +216,6 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
           captureRef={captureRef}
         /> */}
 
-        {/* Card 2.5: 예측 저장 */}
-        <div style={{ ...cardStyle, ...animBlock(150) }}>
-          <div style={{ ...sectionTitleStyle }}>기록 남기기</div>
-          <p style={{
-            fontSize: '14px',
-            color: 'var(--color-text-secondary)',
-            marginBottom: '12px',
-            lineHeight: 1.6,
-          }}>
-            이 점괘 결과를 저장하고 나중에 다시 확인할 수 있어요.
-          </p>
-          <SaveButton
-            saveStatus={saveStatus}
-            onClick={handleSave}
-            saveLabel="이 예측 저장하기"
-          />
-        </div>
-
         {/* Card 3: 효사 (LineTexts) */}
         <div style={{ ...cardStyle, ...animBlock(200) }}>
           <div style={{ ...sectionTitleStyle, display: 'flex', alignItems: 'center' }}>
@@ -267,6 +251,40 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
             )}
           </div>
         )}
+
+        {/* Card 5: 예측 저장 (모든 해석 아래, 다시 점치기 버튼 바로 위) */}
+        <div style={{ ...cardStyle, ...animBlock(400) }}>
+          <div style={{ ...sectionTitleStyle }}>기록 남기기</div>
+          <p style={{
+            fontSize: '14px',
+            color: 'var(--color-text-secondary)',
+            marginBottom: '12px',
+            lineHeight: 1.6,
+          }}>
+            이 점괘 결과를 저장하고 나중에 다시 확인할 수 있어요.
+          </p>
+          <SaveButton
+            saveStatus={saveStatus}
+            onClick={handleSave}
+            saveLabel="이 예측 저장하기"
+          />
+          {/* 저장 성공 후 메모 입력 인라인 표시 */}
+          {saveHook.state.status === 'success' && (() => {
+            const savedRecord = saveHook.state.record;
+            return (
+              <div style={{ marginTop: '16px' }}>
+                <MemoEditor
+                  initialMemo={null}
+                  onSave={(memo) => {
+                    updateRecord(savedRecord.id, { freeMemo: memo });
+                  }}
+                  placeholder="이 점괘에 대한 생각을 남겨보세요"
+                  saveLabel="메모 저장"
+                />
+              </div>
+            );
+          })()}
+        </div>
 
         {/* 배너 광고 (임시 비활성화) */}
         {/* <div
