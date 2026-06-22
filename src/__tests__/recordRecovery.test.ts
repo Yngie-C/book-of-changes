@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { recoverRecord, recoverRecords } from '@/lib/recordRecovery';
-import type { RecoveryWarning, RecoveryResult } from '@/lib/recordRecovery';
+import type { RecoveryWarning, RecoveryResult as _RecoveryResult } from '@/lib/recordRecovery';
 import type { DivinationRecord } from '@/data/types';
 
 // ─── Test Fixtures ───────────────────────────────────────────────────────────
@@ -395,7 +395,7 @@ describe('recoverRecord', () => {
 
   it('reports missing for optional nullable field changingHexagram, defaults to null', () => {
     const raw = rawValid();
-    delete (raw as Record<string, unknown>).changingHexagram;
+    delete (raw as unknown as Record<string, unknown>).changingHexagram;
 
     const result = recoverRecord(raw);
 
@@ -406,7 +406,7 @@ describe('recoverRecord', () => {
 
   it('reports missing for optional string field aiInterpretation, defaults to ""', () => {
     const raw = rawValid();
-    delete (raw as Record<string, unknown>).aiInterpretation;
+    delete (raw as unknown as Record<string, unknown>).aiInterpretation;
 
     const result = recoverRecord(raw);
 
@@ -417,7 +417,7 @@ describe('recoverRecord', () => {
 
   it('reports missing for optional string field userQuestion, defaults to ""', () => {
     const raw = rawValid();
-    delete (raw as Record<string, unknown>).userQuestion;
+    delete (raw as unknown as Record<string, unknown>).userQuestion;
 
     const result = recoverRecord(raw);
 
@@ -428,7 +428,7 @@ describe('recoverRecord', () => {
 
   it('reports missing for optional string field freeMemo, defaults to ""', () => {
     const raw = rawValid();
-    delete (raw as Record<string, unknown>).freeMemo;
+    delete (raw as unknown as Record<string, unknown>).freeMemo;
 
     const result = recoverRecord(raw);
 
@@ -439,7 +439,7 @@ describe('recoverRecord', () => {
 
   it('reports missing for optional nullable field lastViewedAt, defaults to null', () => {
     const raw = rawValid();
-    delete (raw as Record<string, unknown>).lastViewedAt;
+    delete (raw as unknown as Record<string, unknown>).lastViewedAt;
 
     const result = recoverRecord(raw);
 
@@ -482,9 +482,9 @@ describe('recoverRecord', () => {
 
   it('handles optional-only damage without fullyLost flag', () => {
     const raw = rawValid();
-    delete (raw as Record<string, unknown>).freeMemo;
-    delete (raw as Record<string, unknown>).aiInterpretation;
-    (raw as Record<string, unknown>).changingHexagram = 999;
+    delete (raw as unknown as Record<string, unknown>).freeMemo;
+    delete (raw as unknown as Record<string, unknown>).aiInterpretation;
+    (raw as unknown as Record<string, unknown>).changingHexagram = 999;
 
     const result = recoverRecord(raw);
 
@@ -519,7 +519,7 @@ describe('recoverRecord', () => {
 
     // The record object has id etc. set explicitly; extra fields from raw
     // are kept because we spread raw into the recovery fields individually
-    expect((result.record as Record<string, unknown>).extraField).toBeUndefined();
+    expect((result.record as unknown as Record<string, unknown>).extraField).toBeUndefined();
     // Note: extraField is not copied because we reconstruct each field explicitly
   });
 

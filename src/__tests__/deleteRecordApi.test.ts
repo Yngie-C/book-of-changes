@@ -318,7 +318,7 @@ describe('DELETE /api/records/:id — 네트워크/타임아웃 오류', () => {
 
     const abortError = new DOMException('The operation was aborted.', 'AbortError');
 
-    const fetchSpy = setupFetchMock().mockImplementation(
+    const _fetchSpy = setupFetchMock().mockImplementation(
       () =>
         new Promise((_, reject) => {
           // 타이머가 만료되면 reject

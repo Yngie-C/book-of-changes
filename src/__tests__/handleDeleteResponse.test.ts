@@ -3,7 +3,7 @@ import {
   handleDeleteResponse,
   DeleteRollbackError,
 } from '@/lib/handleDeleteResponse';
-import type { ApiDeleteResult, ApiDeleteSuccess, ApiDeleteError } from '@/lib/deleteRecordApi';
+import type { ApiDeleteSuccess, ApiDeleteError } from '@/lib/deleteRecordApi';
 import type { DivinationRecord } from '@/data/types';
 import {
   saveRecord,
@@ -11,7 +11,6 @@ import {
   deleteRecordFromStorage,
   clearRecords,
   getRecordCount,
-  reinsertRecord,
   resetStorageAvailability,
 } from '@/lib/storage';
 import type { CreateRecordInput } from '@/data/types';

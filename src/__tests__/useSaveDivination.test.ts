@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
 import { useSaveDivination } from '@/hooks/useSaveDivination';
 import * as storage from '@/lib/storage';
 import type { CreateRecordInput, DivinationRecord } from '@/data/types';

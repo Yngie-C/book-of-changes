@@ -47,9 +47,9 @@ interface FullScreenAdLoader {
 
 // 개발용 테스트 광고 ID
 const TEST_AD_GROUP_ID = 'ait-ad-test-rewarded-id';
-const TEST_INTERSTITIAL_AD_GROUP_ID = 'ait-ad-test-interstitial-id';
+const _TEST_INTERSTITIAL_AD_GROUP_ID = 'ait-ad-test-interstitial-id';
 const PROD_INTERSTITIAL_AD_GROUP_ID = 'ait.v2.live.96270e5f78604766';
-const TEST_BANNER_AD_GROUP_ID = 'ait-ad-test-banner-id';
+const _TEST_BANNER_AD_GROUP_ID = 'ait-ad-test-banner-id';
 const PROD_BANNER_AD_GROUP_ID = 'ait.v2.live.73acf2d008f94e8f';
 
 // 보상형 광고 ID (프로덕션 ID 발급 후 교체)

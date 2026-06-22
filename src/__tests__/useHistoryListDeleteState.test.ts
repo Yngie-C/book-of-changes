@@ -145,10 +145,10 @@ describe('useHistoryList 삭제 — 상태에서 항목 제외', () => {
   });
 
   it('삭제 후 남은 기록의 순서가 유지된다 (기존 정렬 순서 보존)', async () => {
-    const r1 = storage.saveRecord(makeInput({ mainHexagram: '1. 건(乾)' }));
-    const r2 = storage.saveRecord(makeInput({ mainHexagram: '2. 곤(坤)' }));
-    const r3 = storage.saveRecord(makeInput({ mainHexagram: '3. 둔(屯)' }));
-    const r4 = storage.saveRecord(makeInput({ mainHexagram: '4. 몽(蒙)' }));
+    const _r1 = storage.saveRecord(makeInput({ mainHexagram: '1. 건(乾)' }));
+    const _r2 = storage.saveRecord(makeInput({ mainHexagram: '2. 곤(坤)' }));
+    const _r3 = storage.saveRecord(makeInput({ mainHexagram: '3. 둔(屯)' }));
+    const _r4 = storage.saveRecord(makeInput({ mainHexagram: '4. 몽(蒙)' }));
 
     const { result } = await renderAndWait();
 
@@ -563,8 +563,8 @@ describe('useHistoryList 삭제 — 엣지 케이스', () => {
   });
 
   it('가장 최신 기록 삭제 후 다음 기록이 최신 위치로 온다', async () => {
-    const r1 = storage.saveRecord(makeInput({ mainHexagram: '1. 건(乾)' }));
-    const r2 = storage.saveRecord(makeInput({ mainHexagram: '2. 곤(坤)' }));
+    const _r1 = storage.saveRecord(makeInput({ mainHexagram: '1. 건(乾)' }));
+    const _r2 = storage.saveRecord(makeInput({ mainHexagram: '2. 곤(坤)' }));
     const r3 = storage.saveRecord(makeInput({ mainHexagram: '3. 둔(屯)' }));
     const r4 = storage.saveRecord(makeInput({ mainHexagram: '4. 몽(蒙)' }));
 

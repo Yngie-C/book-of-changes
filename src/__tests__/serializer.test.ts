@@ -257,7 +257,7 @@ describe('deserializeRecords', () => {
 
   it('throws TypeError when required string field "id" is missing', () => {
     const record = makeRecord();
-    delete (record as Record<string, unknown>).id;
+    delete (record as unknown as Record<string, unknown>).id;
     const json = JSON.stringify([record]);
     expect(() => deserializeRecords(json)).toThrow(TypeError);
     // 에러 메시지에 필드명 포함 확인
@@ -271,7 +271,7 @@ describe('deserializeRecords', () => {
 
   it('throws TypeError when required string field "timestamp" is missing', () => {
     const record = makeRecord();
-    delete (record as Record<string, unknown>).timestamp;
+    delete (record as unknown as Record<string, unknown>).timestamp;
     const json = JSON.stringify([record]);
     expect(() => deserializeRecords(json)).toThrow(TypeError);
     expect(() => deserializeRecords(json)).toThrow(/timestamp/);
@@ -279,7 +279,7 @@ describe('deserializeRecords', () => {
 
   it('throws TypeError when required string field "mainHexagram" is missing', () => {
     const record = makeRecord();
-    delete (record as Record<string, unknown>).mainHexagram;
+    delete (record as unknown as Record<string, unknown>).mainHexagram;
     const json = JSON.stringify([record]);
     expect(() => deserializeRecords(json)).toThrow(TypeError);
     expect(() => deserializeRecords(json)).toThrow(/mainHexagram/);
@@ -287,7 +287,7 @@ describe('deserializeRecords', () => {
 
   it('throws TypeError when required string field "createdAt" is missing', () => {
     const record = makeRecord();
-    delete (record as Record<string, unknown>).createdAt;
+    delete (record as unknown as Record<string, unknown>).createdAt;
     const json = JSON.stringify([record]);
     expect(() => deserializeRecords(json)).toThrow(TypeError);
     expect(() => deserializeRecords(json)).toThrow(/createdAt/);
@@ -295,7 +295,7 @@ describe('deserializeRecords', () => {
 
   it('throws TypeError when required string field "updatedAt" is missing', () => {
     const record = makeRecord();
-    delete (record as Record<string, unknown>).updatedAt;
+    delete (record as unknown as Record<string, unknown>).updatedAt;
     const json = JSON.stringify([record]);
     expect(() => deserializeRecords(json)).toThrow(TypeError);
     expect(() => deserializeRecords(json)).toThrow(/updatedAt/);
@@ -303,7 +303,7 @@ describe('deserializeRecords', () => {
 
   it('throws TypeError when required number field "viewCount" is missing', () => {
     const record = makeRecord();
-    delete (record as Record<string, unknown>).viewCount;
+    delete (record as unknown as Record<string, unknown>).viewCount;
     const json = JSON.stringify([record]);
     expect(() => deserializeRecords(json)).toThrow(TypeError);
     expect(() => deserializeRecords(json)).toThrow(/viewCount/);
@@ -317,7 +317,7 @@ describe('deserializeRecords', () => {
 
   it('throws TypeError when required array field "changingLines" is missing', () => {
     const record = makeRecord();
-    delete (record as Record<string, unknown>).changingLines;
+    delete (record as unknown as Record<string, unknown>).changingLines;
     const json = JSON.stringify([record]);
     expect(() => deserializeRecords(json)).toThrow(TypeError);
     expect(() => deserializeRecords(json)).toThrow(/changingLines/);

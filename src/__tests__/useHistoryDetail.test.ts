@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useHistoryDetail } from '@/hooks/useHistoryDetail';
 import * as storage from '@/lib/storage';
@@ -97,7 +97,7 @@ describe('success state', () => {
   it('increments viewCount on each fetch', async () => {
     const record = storage.saveRecord(makeInput());
 
-    const { result, rerender } = renderHook(
+    const { result } = renderHook(
       ({ id }: { id: string | null }) => useHistoryDetail(id),
       { initialProps: { id: record.id } },
     );
@@ -266,7 +266,7 @@ describe('id change', () => {
 
     const { result, rerender } = renderHook(
       ({ id }: { id: string | null }) => useHistoryDetail(id),
-      { initialProps: { id: record.id } },
+      { initialProps: { id: record.id } as { id: string | null } },
     );
 
     await waitFor(() => {

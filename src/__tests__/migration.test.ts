@@ -6,7 +6,8 @@ import {
   unpack,
   CURRENT_SCHEMA_VERSION,
 } from '@/lib/migration';
-import type { DivinationRecord, PackedData } from '@/lib/migration';
+import type { DivinationRecord } from '@/data/types';
+import type { PackedData } from '@/lib/migration';
 import {
   saveRecord,
   loadRecords,

@@ -16,10 +16,18 @@ const DELETE_TIMEOUT_MS = 10_000;
 
 /**
  * API 기본 URL을 반환한다.
- * 호출 시점에 process.env를 읽으므로 테스트에서 stubEnv로 주입 가능하다.
+ * Toss WebView에는 process 전역 객체가 없으므로 안전하게 체크한다.
+ * 테스트 환경(jsdom)에서는 vi.stubEnv로 주입 가능하다.
  */
 function getApiBaseUrl(): string {
-  return process.env.PUBLIC_AI_API_URL ?? '';
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      return process.env.PUBLIC_AI_API_URL ?? '';
+    }
+  } catch {
+    // process 접근 시 ReferenceError 발생 가능 (Toss WebView)
+  }
+  return '';
 }
 
 // ─── Types ──────────────────────────────────────────────────────────────────

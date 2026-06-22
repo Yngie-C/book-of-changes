@@ -75,7 +75,7 @@ export function handleDeleteResponse(
   // 실패: localStorage에 기록 재삽입 (롤백)
   try {
     reinsertRecord(record);
-  } catch (reinsertError) {
+  } catch (_reinsertError) {
     // 재삽입 자체도 실패한 경우 — 원본 API 오류를 우선 전파
     // (reinsert 실패는 QuotaExceeded 또는 StorageUnavailable 상황)
     throw new DeleteRollbackError(errorResult);
