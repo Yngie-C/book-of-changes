@@ -95,9 +95,24 @@ export async function saveImageToDevice(base64Data: string, fileName: string): P
 }
 
 // 이벤트 추적 (향후 analytics 연동 예정)
-export function trackEvent(event: string, params?: Record<string, string>): void {
-  // Toss WebView 환경에서는 process.env가 없으므로 제거
+type LogType = 'screen' | 'click' | 'impression' | 'event';
+
+export function trackEvent(
+  logName: string,
+  logTypeOrParams?: LogType | Record<string, string | number | boolean>,
+  params?: Record<string, string | number | boolean>,
+): void {
+  let logType: LogType = 'event';
+  let mergedParams: Record<string, string | number | boolean> | undefined;
+
+  if (typeof logTypeOrParams === 'string') {
+    logType = logTypeOrParams;
+    mergedParams = params;
+  } else if (logTypeOrParams && typeof logTypeOrParams === 'object') {
+    mergedParams = logTypeOrParams;
+  }
+
   if (typeof window !== 'undefined' && window.console?.debug) {
-    console.debug('[toss:track]', event, params);
+    console.debug('[toss:track]', logType, logName, mergedParams);
   }
 }
