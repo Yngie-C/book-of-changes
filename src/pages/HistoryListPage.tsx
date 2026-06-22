@@ -241,6 +241,21 @@ export default function HistoryListPage({ onBack }: HistoryListPageProps) {
                 </span>
               )}
             </div>
+            {record.freeMemo && (
+              <div
+                style={{
+                  fontSize: '13px',
+                  color: 'var(--color-text-secondary)',
+                  marginTop: '4px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '100%',
+                }}
+              >
+                {record.freeMemo}
+              </div>
+            )}
             <div style={metaRowStyle}>
               <span>
                 {new Date(record.timestamp).toLocaleDateString('ko-KR', {
