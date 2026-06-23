@@ -9,7 +9,7 @@ import {
 // ─── Test Constants ─────────────────────────────────────────────────────────
 
 const TEST_RECORD_ID = '550e8400-e29b-41d4-a716-446655440000';
-const API_BASE_URL = 'https://api.example.com';
+const API_BASE_URL = 'https://book-of-changes-api.viki-meadow.workers.dev';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -23,24 +23,19 @@ function isError(result: ApiDeleteResult): result is ApiDeleteError {
   return result.success === false;
 }
 
-/** fetch mock을 설정하고 API_BASE_URL 환경변수를 주입한다. */
+/** fetch mock을 설정한다. URL은 deleteRecordApi.ts에 하드코딩되어 있음. */
 function setupFetchMock() {
-  // 환경변수 설정
-  vi.stubEnv('PUBLIC_AI_API_URL', API_BASE_URL);
-
-  // jsdom의 fetch를 mock
   return vi.spyOn(globalThis, 'fetch');
 }
 
 // ─── Setup / Teardown ───────────────────────────────────────────────────────
 
 beforeEach(() => {
-  vi.stubEnv('PUBLIC_AI_API_URL', API_BASE_URL);
+  // URL is now hardcoded in deleteRecordApi.ts — no env stubbing needed
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
-  vi.unstubAllEnvs();
 });
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -350,22 +345,23 @@ describe('DELETE /api/records/:id — 네트워크/타임아웃 오류', () => {
 });
 
 // ═════════════════════════════════════════════════════════════════════════════
-// API URL 미설정
+// API URL 확인
 // ═════════════════════════════════════════════════════════════════════════════
 
-describe('DELETE /api/records/:id — API URL 미설정', () => {
-  it('API_BASE_URL이 빈 문자열이면 fetch를 호출하지 않고 오류를 반환한다', async () => {
-    vi.stubEnv('PUBLIC_AI_API_URL', '');
+describe('DELETE /api/records/:id — API URL 확인', () => {
+  it('하드코딩된 API_BASE_URL을 사용하여 fetch를 호출한다', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    fetchSpy.mockResolvedValue(
+      new Response(JSON.stringify({ success: true }), { status: 200 }),
+    );
 
     const result = await deleteRecordViaApi(TEST_RECORD_ID);
 
-    expect(fetchSpy).not.toHaveBeenCalled();
-    expect(isError(result)).toBe(true);
-    if (isError(result)) {
-      expect(result.status).toBe(0);
-      expect(result.message).toBe('API URL이 설정되지 않았습니다');
-    }
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [url] = fetchSpy.mock.calls[0];
+    expect(url).toContain(API_BASE_URL);
+    expect(url).toContain(`/api/records/${TEST_RECORD_ID}`);
+    expect(isSuccess(result)).toBe(true);
   });
 });
 
