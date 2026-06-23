@@ -5,6 +5,10 @@ import type { DivinationRecord } from '@/data/types';
 
 // ─── Factory ────────────────────────────────────────────────────────────────
 
+/**
+ * 기본 팩토리: mainHexagram '1. 건(乾)', changingLines [1~6] (전변)
+ * → 계산되는 변괘 = 2. 곤(坤)
+ */
 function makeRecord(
   overrides?: Partial<DivinationRecord>,
 ): DivinationRecord {
@@ -13,7 +17,7 @@ function makeRecord(
     timestamp: '2026-06-02T12:00:00.000Z',
     mainHexagram: '1. 건(乾)',
     changingHexagram: '2. 곤(坤)',
-    changingLines: [2, 5],
+    changingLines: [1, 2, 3, 4, 5, 6],
     aiInterpretation: '이것은 테스트 해석입니다.',
     userQuestion: '오늘의 운세',
     freeMemo: '',
@@ -28,10 +32,11 @@ function makeRecord(
 // ─── Basic rendering ────────────────────────────────────────────────────────
 
 describe('basic rendering', () => {
-  it('renders the main hexagram name', () => {
+  it('renders the hexagram name via HexagramInfo', () => {
     const record = makeRecord({ mainHexagram: '1. 건(乾)' });
     render(<HistoryDetail record={record} />);
-    expect(screen.getByText('1. 건(乾)')).toBeTruthy();
+    // HexagramInfo renders "제1괘 건" — text split across elements, use regex
+    expect(screen.getByText(/제1괘.*건/)).toBeTruthy();
   });
 
   it('renders the hexagram unicode symbol when valid number', () => {
@@ -41,42 +46,68 @@ describe('basic rendering', () => {
     expect(screen.getByText('䷀')).toBeTruthy();
   });
 
-  it('renders the changing hexagram when present', () => {
+  it('renders the changing hexagram name (computed from lines)', () => {
+    // hexagram 1 (건), all 6 lines changing → hexagram 2 (곤)
     const record = makeRecord({
       mainHexagram: '1. 건(乾)',
-      changingHexagram: '2. 곤(坤)',
+      changingLines: [1, 2, 3, 4, 5, 6],
     });
     render(<HistoryDetail record={record} />);
-    expect(screen.getByText('2. 곤(坤)')).toBeTruthy();
+    // HexagramInfo renders "제2괘 곤" for the changing hexagram
+    expect(screen.getByText(/제2괘.*곤/)).toBeTruthy();
   });
 
-  it('does not render changing hexagram when null', () => {
-    const record = makeRecord({ changingHexagram: null });
+  it('does not render changing hexagram section when no changing lines', () => {
+    const record = makeRecord({ changingLines: [] });
     render(<HistoryDetail record={record} />);
-    // "본괘" label appears only once in the header
-    const benGwaLabels = screen.getAllByText('본괘');
-    expect(benGwaLabels.length).toBe(1);
-    // "변괘" should NOT appear as a label
+    // "변괘" section title should NOT appear
     expect(screen.queryByText('변괘')).toBeNull();
   });
 });
 
-// ─── Changing lines ────────────────────────────────────────────────────────
+// ─── Card structure ─────────────────────────────────────────────────────────
 
-describe('changing lines', () => {
-  it('renders changing line positions in Korean', () => {
-    const record = makeRecord({ changingLines: [1, 3, 6] });
+describe('card structure', () => {
+  it('renders 효 구성 section title', () => {
+    const record = makeRecord();
     render(<HistoryDetail record={record} />);
-    // 초효 · 3효 · 상효
-    expect(screen.getByText(/초효/)).toBeTruthy();
-    expect(screen.getByText(/3효/)).toBeTruthy();
-    expect(screen.getByText(/상효/)).toBeTruthy();
+    expect(screen.getByText('효 구성')).toBeTruthy();
   });
 
-  it('renders "없음" when no changing lines', () => {
+  it('renders 괘사 section title', () => {
+    const record = makeRecord();
+    render(<HistoryDetail record={record} />);
+    // Interpretation also renders "괘사" label, so use getAllByText
+    const labels = screen.getAllByText(/괘사/);
+    expect(labels.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders 효사 section title', () => {
+    const record = makeRecord();
+    render(<HistoryDetail record={record} />);
+    expect(screen.getByText(/효사/)).toBeTruthy();
+  });
+
+  it('renders 변괘 section title when changing hexagram exists', () => {
+    const record = makeRecord({ changingLines: [1, 2, 3, 4, 5, 6] });
+    render(<HistoryDetail record={record} />);
+    expect(screen.getByText('변괘')).toBeTruthy();
+  });
+});
+
+// ─── Changing guide ─────────────────────────────────────────────────────────
+
+describe('changing guide', () => {
+  it('renders ChangingGuide when changingLines present', () => {
+    const record = makeRecord({ changingLines: [2, 5] });
+    render(<HistoryDetail record={record} />);
+    expect(screen.getByText('변효 해석 가이드')).toBeTruthy();
+  });
+
+  it('does not render ChangingGuide when changingLines empty', () => {
     const record = makeRecord({ changingLines: [] });
     render(<HistoryDetail record={record} />);
-    expect(screen.getByText(/없음/)).toBeTruthy();
+    expect(screen.queryByText('변효 해석 가이드')).toBeNull();
   });
 });
 
@@ -89,12 +120,10 @@ describe('date formatting', () => {
     expect(screen.getByText(/2026\.06\.02/)).toBeTruthy();
   });
 
-  it('renders lastViewedAt when present', () => {
-    const record = makeRecord({
-      lastViewedAt: '2026-06-01T09:00:00.000Z',
-    });
+  it('handles invalid timestamp gracefully', () => {
+    const record = makeRecord({ timestamp: 'not-a-date' });
     render(<HistoryDetail record={record} />);
-    expect(screen.getByText('마지막 조회')).toBeTruthy();
+    expect(screen.getByText('not-a-date')).toBeTruthy();
   });
 });
 
@@ -104,13 +133,13 @@ describe('view count', () => {
   it('renders view count', () => {
     const record = makeRecord({ viewCount: 5 });
     render(<HistoryDetail record={record} />);
-    expect(screen.getByText('5회')).toBeTruthy();
+    expect(screen.getByText(/5.*회.*조회/)).toBeTruthy();
   });
 
   it('renders zero view count', () => {
     const record = makeRecord({ viewCount: 0 });
     render(<HistoryDetail record={record} />);
-    expect(screen.getByText('0회')).toBeTruthy();
+    expect(screen.getByText(/0.*회.*조회/)).toBeTruthy();
   });
 });
 
@@ -160,81 +189,64 @@ describe('AI interpretation', () => {
 // ─── Free memo ──────────────────────────────────────────────────────────────
 
 describe('free memo', () => {
-  it('renders free memo when non-empty', () => {
+  it('renders free memo via memoSlot when provided', () => {
     const record = makeRecord({ freeMemo: '중요한 메모입니다' });
-    render(<HistoryDetail record={record} />);
+    render(
+      <HistoryDetail
+        record={record}
+        memoSlot={<div>{record.freeMemo}</div>}
+      />
+    );
     expect(screen.getByText('중요한 메모입니다')).toBeTruthy();
   });
 
-  it('does not render memo section when empty string', () => {
+  it('does not render memo section when no memoSlot provided', () => {
     const record = makeRecord({ freeMemo: '' });
     render(<HistoryDetail record={record} />);
     expect(screen.queryByText('메모')).toBeNull();
   });
 });
 
-// ─── Section labels ─────────────────────────────────────────────────────────
-
-describe('section labels', () => {
-  it('renders 본괘 label for main hexagram', () => {
-    const record = makeRecord();
-    render(<HistoryDetail record={record} />);
-    expect(screen.getByText('본괘')).toBeTruthy();
-  });
-
-  it('does not render 변괘 label when changingHexagram is null', () => {
-    const record = makeRecord({ changingHexagram: null });
-    render(<HistoryDetail record={record} />);
-    expect(screen.queryByText('변괘')).toBeNull();
-  });
-
-  it('renders 변괘 label when changingHexagram is present', () => {
-    const record = makeRecord({ changingHexagram: '2. 곤(坤)' });
-    render(<HistoryDetail record={record} />);
-    // 본괘 + 변괘 labels
-    const labels = screen.getAllByText(/괘$/);
-    expect(labels.length).toBeGreaterThanOrEqual(2);
-  });
-});
-
 // ─── Edge cases ─────────────────────────────────────────────────────────────
 
 describe('edge cases', () => {
-  it('handles invalid hexagram string gracefully (still renders text)', () => {
+  it('handles invalid hexagram string gracefully (shows fallback)', () => {
     const record = makeRecord({ mainHexagram: 'invalid' });
     render(<HistoryDetail record={record} />);
-    expect(screen.getByText('invalid')).toBeTruthy();
-    // Should not crash if unicode lookup fails
+    expect(screen.getByText('기록 데이터를 불러올 수 없습니다.')).toBeTruthy();
   });
 
-  it('handles invalid timestamp gracefully', () => {
-    const record = makeRecord({ timestamp: 'not-a-date' });
-    render(<HistoryDetail record={record} />);
-    expect(screen.getByText('not-a-date')).toBeTruthy();
-  });
-
-  it('renders with maximal data (all ontology fields filled)', () => {
+  it('renders with maximal data (all optional fields filled)', () => {
     const record = makeRecord({
       mainHexagram: '30. 이(離)',
-      changingHexagram: '31. 함(咸)',
       changingLines: [1, 2, 3, 4, 5, 6],
       aiInterpretation: '풍부한 해석입니다.',
       userQuestion: '무엇이든 물어보세요',
       freeMemo: '상세 메모',
-      lastViewedAt: '2026-06-02T10:00:00.000Z',
       viewCount: 99,
     });
-    render(<HistoryDetail record={record} />);
+    const { container } = render(
+      <HistoryDetail
+        record={record}
+        memoSlot={<div>{record.freeMemo}</div>}
+      />
+    );
+    const fullText = container.textContent ?? '';
 
-    expect(screen.getByText('30. 이(離)')).toBeTruthy();
-    expect(screen.getByText('31. 함(咸)')).toBeTruthy();
-    expect(screen.getByText('풍부한 해석입니다.')).toBeTruthy();
-    expect(screen.getByText('무엇이든 물어보세요')).toBeTruthy();
-    expect(screen.getByText('상세 메모')).toBeTruthy();
-    expect(screen.getByText('99회')).toBeTruthy();
+    // HexagramInfo renders "제30괘 이" and "제29괘 감" for changing hexagram
+    expect(fullText).toContain('제30');
+    expect(fullText).toContain('이');
+    expect(fullText).toContain('제29');
+    expect(fullText).toContain('감');
+    // Optional sections
+    expect(fullText).toContain('풍부한 해석입니다.');
+    expect(fullText).toContain('무엇이든 물어보세요');
+    expect(fullText).toContain('상세 메모');
+    expect(fullText).toContain('99');
+    expect(fullText).toContain('회 조회');
   });
 
-  it('renders with minimal data (only required ontology fields)', () => {
+  it('renders with minimal data (only required fields)', () => {
     const record: DivinationRecord = {
       id: 'minimal-001',
       timestamp: '2026-06-02T00:00:00.000Z',
@@ -252,8 +264,8 @@ describe('edge cases', () => {
     render(<HistoryDetail record={record} />);
 
     // Core hexagram info renders
-    expect(screen.getByText('1. 건(乾)')).toBeTruthy();
-    // 변괘 section absent
+    expect(screen.getByText(/제1괘.*건/)).toBeTruthy();
+    // 변괘 section absent (no changing lines)
     expect(screen.queryByText('변괘')).toBeNull();
     // Optional sections absent
     expect(screen.queryByText('AI 맞춤 해석')).toBeNull();

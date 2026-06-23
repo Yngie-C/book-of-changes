@@ -1,9 +1,19 @@
-import type { CSSProperties } from 'react';
-import type { DivinationRecord } from '@/data/types';
+import { useMemo } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import type { DivinationRecord, LineResult, Hexagram } from '@/data/types';
 import { HEXAGRAMS } from '@/data/hexagrams';
+import { TRIGRAMS } from '@/data/trigrams';
+import { useHexagram } from '@/hooks/useHexagram';
+import HexagramSymbol from '@/components/Hexagram/HexagramSymbol';
+import HexagramInfo from '@/components/Hexagram/HexagramInfo';
+import HexagramStack from '@/components/Hexagram/HexagramStack';
+import ChangingGuide from '@/components/Hexagram/ChangingGuide';
+import Interpretation from '@/components/Result/Interpretation';
+import LineTexts from '@/components/Result/LineTexts';
 
 type HistoryDetailProps = {
   record: DivinationRecord;
+  memoSlot?: ReactNode;
 };
 
 /**
@@ -13,6 +23,34 @@ function parseHexagramNumber(mainHexagram: string): number | null {
   const match = mainHexagram.match(/^(\d+)/);
   if (!match) return null;
   return parseInt(match[1], 10);
+}
+
+/**
+ * DivinationRecord에서 LineResult[]를 복원한다.
+ *
+ * 저장된 mainHexagram 문자열에서 괘 번호를 추출하고,
+ * HEXAGRAMS에서 상/하괘 이름으로 팔괘(TRIGRAMS)을 조회하여
+ * 각 효의 타입(yang/yin)을 가져온다.
+ * changingLines 배열로 변효 여부를 설정한다.
+ */
+function reconstructLines(record: DivinationRecord): LineResult[] {
+  const num = parseHexagramNumber(record.mainHexagram);
+  if (!num || num < 1 || num > 64) return [];
+
+  const hexagram: Hexagram | undefined = HEXAGRAMS[num - 1];
+  if (!hexagram) return [];
+
+  const lowerTrigram = TRIGRAMS.find(t => t.name === hexagram.lowerTrigram);
+  const upperTrigram = TRIGRAMS.find(t => t.name === hexagram.upperTrigram);
+  if (!lowerTrigram || !upperTrigram) return [];
+
+  // lines[0~2] = 하괘 (1~3효), lines[3~5] = 상괘 (4~6효)
+  const lineTypes = [...lowerTrigram.lines, ...upperTrigram.lines];
+  return lineTypes.map((type, i) => {
+    const isChanging = record.changingLines.includes(i + 1);
+    const value: 6 | 7 | 8 | 9 = type === 'yang' ? (isChanging ? 9 : 7) : (isChanging ? 6 : 8);
+    return { type, changing: isChanging, value };
+  });
 }
 
 /**
@@ -33,115 +71,15 @@ function formatDate(iso: string): string {
   }
 }
 
-/** 괘명 라벨 + 괘명 + 유니코드 기호 */
-function HexagramHeader({
-  label,
-  hexagramValue,
-}: {
-  label: string;
-  hexagramValue: string | null;
-}) {
-  if (!hexagramValue) return null;
-  const num = parseHexagramNumber(hexagramValue);
-  const data = num != null && num >= 1 && num <= 64 ? HEXAGRAMS[num - 1] : null;
+export default function HistoryDetail({ record, memoSlot }: HistoryDetailProps) {
+  const lines = useMemo(() => reconstructLines(record), [record]);
+  const { hexagram, changingHexagram, interpretationRule } = useHexagram(lines);
+  const highlightedLines = interpretationRule?.highlightedLines ?? [];
 
-  const wrapStyle: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginBottom: '8px',
-  };
-  const labelStyle: CSSProperties = {
-    fontSize: '12px',
-    fontWeight: 600,
-    color: 'var(--color-text-secondary)',
-    marginBottom: '4px',
-  };
-  const symbolStyle: CSSProperties = {
-    fontSize: '48px',
-    lineHeight: 1,
-    marginBottom: '4px',
-  };
-  const nameStyle: CSSProperties = {
-    fontSize: '18px',
-    fontWeight: 700,
-    color: 'var(--color-text-primary)',
-  };
+  // ── Styles ──────────────────────────────────────────────────────────────
 
-  return (
-    <div style={wrapStyle}>
-      <span style={labelStyle}>{label}</span>
-      {data && <div style={symbolStyle}>{data.unicode}</div>}
-      <span style={nameStyle}>{hexagramValue}</span>
-    </div>
-  );
-}
-
-function SectionBlock({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  const wrapStyle: CSSProperties = {
-    padding: '16px',
-    borderRadius: '12px',
-    backgroundColor: 'var(--color-bg-elevated, #F2F4F6)',
-    marginBottom: '12px',
-  };
-  const labelStyle: CSSProperties = {
-    fontSize: '12px',
-    fontWeight: 600,
-    color: 'var(--color-text-secondary)',
-    marginBottom: '8px',
-  };
-
-  return (
-    <div style={wrapStyle}>
-      <div style={labelStyle}>{label}</div>
-      {children}
-    </div>
-  );
-}
-
-function MetaChip({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  const wrapStyle: CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    fontSize: '13px',
-    color: 'var(--color-text-tertiary)',
-  };
-
-  return (
-    <span style={wrapStyle}>
-      <span style={{ fontWeight: 500, color: 'var(--color-text-secondary)' }}>
-        {label}
-      </span>
-      <span>{value}</span>
-    </span>
-  );
-}
-
-export default function HistoryDetail({ record }: HistoryDetailProps) {
   const containerStyle: CSSProperties = {
     padding: '20px 16px',
-  };
-
-  const headerWrapStyle: CSSProperties = {
-    display: 'flex',
-    gap: '16px',
-    justifyContent: 'center',
-    marginBottom: '20px',
-    padding: '20px 0',
-    borderBottom: '1px solid var(--color-divider)',
   };
 
   const dateBarStyle: CSSProperties = {
@@ -153,14 +91,36 @@ export default function HistoryDetail({ record }: HistoryDetailProps) {
     marginBottom: '24px',
   };
 
-  const metaRowStyle: CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  const cardStyle: CSSProperties = {
+    backgroundColor: 'var(--color-bg)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '24px 20px',
     marginBottom: '16px',
   };
 
-  const interpretationTextStyle: CSSProperties = {
+  const sectionTitleStyle: CSSProperties = {
+    fontSize: '20px',
+    fontWeight: 700,
+    color: 'var(--color-text-primary)',
+    letterSpacing: '0.06em',
+    marginBottom: '12px',
+  };
+
+  const sectionBlockStyle: CSSProperties = {
+    padding: '16px',
+    borderRadius: '12px',
+    backgroundColor: 'var(--color-bg-elevated, #F2F4F6)',
+    marginBottom: '12px',
+  };
+
+  const blockLabelStyle: CSSProperties = {
+    fontSize: '12px',
+    fontWeight: 600,
+    color: 'var(--color-text-secondary)',
+    marginBottom: '8px',
+  };
+
+  const textStyle: CSSProperties = {
     fontSize: 'var(--font-size-body1)',
     color: 'var(--color-text-primary)',
     lineHeight: 1.7,
@@ -189,70 +149,102 @@ export default function HistoryDetail({ record }: HistoryDetailProps) {
     wordBreak: 'keep-all',
   };
 
-  const changingLinesStr =
+  // 데이터가 부족하여 괘를 복원할 수 없는 경우
+  if (!hexagram) {
+    return (
+      <div style={containerStyle}>
+        <div style={dateBarStyle}>
+          <span>{formatDate(record.timestamp)}</span>
+          <span>{record.viewCount}회 조회</span>
+        </div>
+        <div style={{ ...cardStyle, textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
+          기록 데이터를 불러올 수 없습니다.
+        </div>
+      </div>
+    );
+  }
+
+  const _changingLinesStr =
     record.changingLines.length > 0
       ? record.changingLines
-          .map(
-            (pos) =>
-              ['초효', '2효', '3효', '4효', '5효', '상효'][pos - 1] ?? `${pos}효`,
-          )
+          .map(pos => ['초효', '2효', '3효', '4효', '5효', '상효'][pos - 1] ?? `${pos}효`)
           .join(' · ')
       : '없음';
 
   return (
     <div style={containerStyle}>
-      {/* 날짜 + 상세 메타 */}
+      {/* 날짜 + 조회 메타 */}
       <div style={dateBarStyle}>
         <span>{formatDate(record.timestamp)}</span>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <MetaChip label="조회" value={`${record.viewCount}회`} />
-          {record.lastViewedAt && (
-            <MetaChip
-              label="마지막 조회"
-              value={formatDate(record.lastViewedAt)}
-            />
-          )}
-        </div>
+        <span>{record.viewCount}회 조회</span>
       </div>
 
-      {/* 본괘 / 변괘 대조 */}
-      <div style={headerWrapStyle}>
-        <HexagramHeader label="본괘" hexagramValue={record.mainHexagram} />
-        {record.changingHexagram && (
-          <HexagramHeader label="변괘" hexagramValue={record.changingHexagram} />
+      {/* Card 1: 괘 정보 + 효 구성 + 변효 가이드 */}
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+          <HexagramSymbol hexagram={hexagram} size="large" />
+          <HexagramInfo hexagram={hexagram} />
+        </div>
+
+        <div style={{ ...sectionTitleStyle, display: 'flex', alignItems: 'center' }}>효 구성</div>
+        <HexagramStack lines={lines} showChanging size="medium" />
+
+        {record.changingLines.length > 0 && interpretationRule && (
+          <div style={{ marginTop: '16px' }}>
+            <ChangingGuide rule={interpretationRule} />
+          </div>
         )}
       </div>
 
-      {/* 변효 정보 */}
-      <div style={metaRowStyle}>
-        <MetaChip label="변효" value={changingLinesStr} />
+      {/* Card 2: 괘사 */}
+      <div style={cardStyle}>
+        <div style={{ ...sectionTitleStyle, display: 'flex', alignItems: 'center' }}>
+          괘사
+        </div>
+        <Interpretation hexagram={hexagram} />
       </div>
 
-      {/* 사용자 질문 */}
+      {/* Card 3: 효사 */}
+      <div style={cardStyle}>
+        <div style={{ ...sectionTitleStyle, display: 'flex', alignItems: 'center' }}>
+          효사 <span style={{ fontWeight: 400, fontSize: '12px', color: 'var(--color-text-tertiary)', marginLeft: '6px' }}>· 각 효의 의미</span>
+        </div>
+        <LineTexts hexagram={hexagram} highlightedLines={highlightedLines} />
+      </div>
+
+      {/* Card 4: 변괘 (있을 경우, 항상 펼쳐져 있음) */}
+      {changingHexagram && (
+        <div style={cardStyle}>
+          <div style={{ ...sectionTitleStyle, display: 'flex', alignItems: 'center' }}>
+            변괘
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <HexagramSymbol hexagram={changingHexagram} size="large" />
+            <HexagramInfo hexagram={changingHexagram} />
+          </div>
+          <Interpretation hexagram={changingHexagram} />
+        </div>
+      )}
+
+      {/* 추가 기록 데이터: 질문, AI 해석, 메모 */}
       {record.userQuestion && (
-        <SectionBlock label="질문">
+        <div style={sectionBlockStyle}>
+          <div style={blockLabelStyle}>질문</div>
           <div style={questionStyle}>
             <span style={questionEmojiStyle}>💭</span>
             <span>{record.userQuestion}</span>
           </div>
-        </SectionBlock>
+        </div>
       )}
 
-      {/* AI 맞춤 해석 */}
       {record.aiInterpretation && (
-        <SectionBlock label="AI 맞춤 해석">
-          <div style={interpretationTextStyle}>
-            {record.aiInterpretation}
-          </div>
-        </SectionBlock>
+        <div style={sectionBlockStyle}>
+          <div style={blockLabelStyle}>AI 맞춤 해석</div>
+          <div style={textStyle}>{record.aiInterpretation}</div>
+        </div>
       )}
 
-      {/* 자유 메모 */}
-      {record.freeMemo ? (
-        <SectionBlock label="메모">
-          <div style={memoStyle}>{record.freeMemo}</div>
-        </SectionBlock>
-      ) : null}
+      {memoSlot}
     </div>
   );
 }

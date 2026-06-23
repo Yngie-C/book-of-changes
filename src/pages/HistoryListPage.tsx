@@ -17,6 +17,7 @@ export default function HistoryListPage({ onBack }: HistoryListPageProps) {
   const { state, deleteRecord, refresh } = useHistoryList();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DivinationRecord | null>(null);
+  const [memoEditing, setMemoEditing] = useState(false);
 
   const selectedRecord =
     selectedId && state.status === 'ready'
@@ -116,6 +117,37 @@ export default function HistoryListPage({ onBack }: HistoryListPageProps) {
     padding: '4px 8px',
   };
 
+  const editBtnStyle: CSSProperties = {
+    background: 'none',
+    border: 'none',
+    color: 'var(--color-primary)',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    padding: '4px 8px',
+  };
+
+  const cancelEditBtnStyle: CSSProperties = {
+    background: 'none',
+    border: 'none',
+    color: 'var(--color-text-tertiary)',
+    fontSize: '13px',
+    cursor: 'pointer',
+    padding: '4px 8px',
+  };
+
+  const memoDisplayStyle: CSSProperties = {
+    fontSize: 'var(--font-size-body1)',
+    color: 'var(--color-text-primary)',
+    lineHeight: 1.7,
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'keep-all',
+    minHeight: '40px',
+    padding: '14px 16px',
+    borderRadius: '12px',
+    backgroundColor: 'var(--color-bg-elevated, #F2F4F6)',
+  };
+
   // ── Memo save handler ─────────────────────────────────────────────────────
 
   const handleMemoSave = async (recordId: string, memo: string) => {
@@ -136,17 +168,49 @@ export default function HistoryListPage({ onBack }: HistoryListPageProps) {
         showBack
         onBack={handleBackToList}
       >
-        <div style={{ padding: '0 16px 24px' }}>
-          <HistoryDetail record={selectedRecord} />
-          <div style={cardStyle}>
-            <div style={sectionTitleStyle}>메모</div>
-            <MemoEditor
-              initialMemo={selectedRecord.freeMemo}
-              onSave={(memo) => handleMemoSave(selectedRecord.id, memo)}
-              placeholder="이 점괘에 대한 생각을 남겨보세요"
-            />
-          </div>
-        </div>
+        <HistoryDetail
+          record={selectedRecord}
+          memoSlot={
+            <div style={cardStyle}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span style={sectionTitleStyle}>메모</span>
+                {memoEditing ? (
+                  <button
+                    type="button"
+                    style={cancelEditBtnStyle}
+                    onClick={() => setMemoEditing(false)}
+                    aria-label="수정 취소"
+                  >
+                    취소
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    style={editBtnStyle}
+                    onClick={() => setMemoEditing(true)}
+                    aria-label="메모 수정"
+                  >
+                    {selectedRecord.freeMemo ? '수정' : '작성'}
+                  </button>
+                )}
+              </div>
+              {memoEditing ? (
+                <MemoEditor
+                  initialMemo={selectedRecord.freeMemo}
+                  onSave={async (memo) => {
+                    await handleMemoSave(selectedRecord.id, memo);
+                    setMemoEditing(false);
+                  }}
+                  placeholder="점괘에 대한 간단한 메모를 남겨보세요 (예 : 1/1 오늘의 운세)"
+                />
+              ) : (
+                <div style={memoDisplayStyle}>
+                  {selectedRecord.freeMemo || '아직 작성된 메모가 없어요.'}
+                </div>
+              )}
+            </div>
+          }
+        />
       </Layout>
     );
   }
@@ -241,6 +305,21 @@ export default function HistoryListPage({ onBack }: HistoryListPageProps) {
                 </span>
               )}
             </div>
+            {record.freeMemo && (
+              <div
+                style={{
+                  fontSize: '13px',
+                  color: 'var(--color-text-secondary)',
+                  marginTop: '4px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '100%',
+                }}
+              >
+                {record.freeMemo}
+              </div>
+            )}
             <div style={metaRowStyle}>
               <span>
                 {new Date(record.timestamp).toLocaleDateString('ko-KR', {
