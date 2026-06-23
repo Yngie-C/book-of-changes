@@ -34,7 +34,6 @@ interface InterpretRequest {
     situation: string;
     category: string;
   };
-  deviceId?: string;
 }
 
 interface InterpretResponse {
@@ -64,7 +63,7 @@ function corsHeaders(origin: string, allowedOrigin: string): Record<string, stri
   return {
     'Access-Control-Allow-Origin': isAllowed ? origin : '',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Auth-Method',
     'Access-Control-Max-Age': '86400',
   };
 }
@@ -76,14 +75,68 @@ function sanitizeInput(text: string): string {
     .slice(0, 200);
 }
 
-async function checkRateLimit(kv: KVNamespace, deviceId: string): Promise<boolean> {
+async function checkRateLimit(kv: KVNamespace, rateLimitId: string): Promise<boolean> {
   const now = Date.now();
-  const minuteKey = `minute:${deviceId}:${Math.floor(now / 60000)}`;
+  const minuteKey = `minute:${rateLimitId}:${Math.floor(now / 60000)}`;
   const current = await kv.get(minuteKey);
   const count = current ? parseInt(current, 10) : 0;
   if (count >= 10) return false;
   await kv.put(minuteKey, String(count + 1), { expirationTtl: 120 });
   return true;
+}
+
+// ─── Auth: TTL token issuance & verification ───
+
+const TTL_TOKEN_EXPIRY_SECONDS = 300; // 5 minutes
+
+function generateToken(): string {
+  // Cryptographically random token using Web Crypto API (available in Workers)
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function issueTtlToken(kv: KVNamespace): Promise<string> {
+  const token = generateToken();
+  // Store in KV with TTL; key prefixed with 'auth:' to distinguish from rate-limit keys
+  await kv.put(`auth:${token}`, '1', { expirationTtl: TTL_TOKEN_EXPIRY_SECONDS });
+  return token;
+}
+
+interface AuthResult {
+  rateLimitId: string;
+  method: string;
+}
+
+async function verifyAuth(
+  request: Request,
+  kv: KVNamespace,
+): Promise<AuthResult | null> {
+  const authHeader = request.headers.get('Authorization');
+  const methodHeader = request.headers.get('X-Auth-Method');
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const token = authHeader.slice('Bearer '.length).trim();
+  if (!token) return null;
+
+  const method = methodHeader || 'unknown';
+
+  if (method === 'anonymous_key') {
+    // SDK device ID — verified by presence (SDK guarantees per-device uniqueness)
+    return { rateLimitId: `anon:${token}`, method };
+  }
+
+  if (method === 'ttl_token') {
+    // Workers-issued TTL token — verify it exists in KV
+    const stored = await kv.get(`auth:${token}`);
+    if (stored === null) return null; // expired or invalid
+    return { rateLimitId: `ttl:${token}`, method };
+  }
+
+  return null;
 }
 
 function extractContent(response: OpenAI.Chat.Completions.ChatCompletion, fnName: string): string {
@@ -145,21 +198,42 @@ export default {
       return Response.json({ ok: true }, { headers });
     }
 
+    // Auth token endpoint — issues a short-TTL token for fallback auth
+    if (url.pathname === '/api/auth/token' && request.method === 'POST') {
+      try {
+        const token = await issueTtlToken(env.RATE_LIMIT);
+        return Response.json(
+          { token, expiresIn: TTL_TOKEN_EXPIRY_SECONDS },
+          { headers },
+        );
+      } catch (error) {
+        const message = error instanceof Error ? error.message : '토큰 발급 실패';
+        return Response.json({ error: message }, { status: 500, headers });
+      }
+    }
+
     // AI Interpret endpoint
     if (url.pathname === '/api/interpret' && request.method === 'POST') {
       try {
         const body = await request.json();
         const req = validateRequest(body);
 
-        // Rate limit
-        if (req.deviceId) {
-          const allowed = await checkRateLimit(env.RATE_LIMIT, req.deviceId);
-          if (!allowed) {
-            return Response.json(
-              { error: '요청이 너무 잦아요. 잠시 후 다시 시도해 주세요' },
-              { status: 429, headers }
-            );
-          }
+        // Auth verification — extract authenticated identifier for rate limiting
+        const auth = await verifyAuth(request, env.RATE_LIMIT);
+        if (!auth) {
+          return Response.json(
+            { error: '인증이 필요합니다' },
+            { status: 401, headers },
+          );
+        }
+
+        // Rate limit using authenticated identifier (not client-supplied deviceId)
+        const allowed = await checkRateLimit(env.RATE_LIMIT, auth.rateLimitId);
+        if (!allowed) {
+          return Response.json(
+            { error: '요청이 너무 잦아요. 잠시 후 다시 시도해 주세요' },
+            { status: 429, headers },
+          );
         }
 
         const hexagram = HEXAGRAMS[req.hexagramNumber - 1];

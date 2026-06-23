@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "extract-hexagrams": "npx tsx scripts/extract-hexagrams.ts"
+    "extract-hexagrams": "npx tsx scripts/extract-hexagrams.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "openai": "^4.0.0"

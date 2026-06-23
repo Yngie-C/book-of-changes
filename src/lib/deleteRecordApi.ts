@@ -15,19 +15,13 @@
 const DELETE_TIMEOUT_MS = 10_000;
 
 /**
- * API 기본 URL을 반환한다.
- * Toss WebView에는 process 전역 객체가 없으므로 안전하게 체크한다.
- * 테스트 환경(jsdom)에서는 vi.stubEnv로 주입 가능하다.
+ * API 기본 URL — 하드코딩 (Toss WebView에는 process 전역 객체가 없음).
+ * 테스트 환경(jsdom)에서는 vi.stubGlobal으로 fetch를 mock하여 테스트.
  */
+const API_BASE_URL = 'https://book-of-changes-api.viki-meadow.workers.dev';
+
 function getApiBaseUrl(): string {
-  try {
-    if (typeof process !== 'undefined' && process.env) {
-      return process.env.PUBLIC_AI_API_URL ?? '';
-    }
-  } catch {
-    // process 접근 시 ReferenceError 발생 가능 (Toss WebView)
-  }
-  return '';
+  return API_BASE_URL;
 }
 
 // ─── Types ──────────────────────────────────────────────────────────────────
