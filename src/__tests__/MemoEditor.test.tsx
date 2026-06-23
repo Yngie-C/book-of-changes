@@ -4,7 +4,7 @@ import MemoEditor from '@/components/History/MemoEditor';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const MAX_MEMO_LENGTH = 500;
+const MAX_MEMO_LENGTH = 100;
 
 // ─── Setup / Teardown ───────────────────────────────────────────────────────
 

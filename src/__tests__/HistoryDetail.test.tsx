@@ -189,13 +189,18 @@ describe('AI interpretation', () => {
 // ─── Free memo ──────────────────────────────────────────────────────────────
 
 describe('free memo', () => {
-  it('renders free memo when non-empty', () => {
+  it('renders free memo via memoSlot when provided', () => {
     const record = makeRecord({ freeMemo: '중요한 메모입니다' });
-    render(<HistoryDetail record={record} />);
+    render(
+      <HistoryDetail
+        record={record}
+        memoSlot={<div>{record.freeMemo}</div>}
+      />
+    );
     expect(screen.getByText('중요한 메모입니다')).toBeTruthy();
   });
 
-  it('does not render memo section when empty string', () => {
+  it('does not render memo section when no memoSlot provided', () => {
     const record = makeRecord({ freeMemo: '' });
     render(<HistoryDetail record={record} />);
     expect(screen.queryByText('메모')).toBeNull();
@@ -220,7 +225,12 @@ describe('edge cases', () => {
       freeMemo: '상세 메모',
       viewCount: 99,
     });
-    const { container } = render(<HistoryDetail record={record} />);
+    const { container } = render(
+      <HistoryDetail
+        record={record}
+        memoSlot={<div>{record.freeMemo}</div>}
+      />
+    );
     const fullText = container.textContent ?? '';
 
     // HexagramInfo renders "제30괘 이" and "제29괘 감" for changing hexagram

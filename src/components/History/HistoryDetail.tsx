@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { DivinationRecord, LineResult, Hexagram } from '@/data/types';
 import { HEXAGRAMS } from '@/data/hexagrams';
 import { TRIGRAMS } from '@/data/trigrams';
@@ -13,6 +13,7 @@ import LineTexts from '@/components/Result/LineTexts';
 
 type HistoryDetailProps = {
   record: DivinationRecord;
+  memoSlot?: ReactNode;
 };
 
 /**
@@ -70,7 +71,7 @@ function formatDate(iso: string): string {
   }
 }
 
-export default function HistoryDetail({ record }: HistoryDetailProps) {
+export default function HistoryDetail({ record, memoSlot }: HistoryDetailProps) {
   const lines = useMemo(() => reconstructLines(record), [record]);
   const { hexagram, changingHexagram, interpretationRule } = useHexagram(lines);
   const highlightedLines = interpretationRule?.highlightedLines ?? [];
@@ -243,12 +244,7 @@ export default function HistoryDetail({ record }: HistoryDetailProps) {
         </div>
       )}
 
-      {record.freeMemo && (
-        <div style={sectionBlockStyle}>
-          <div style={blockLabelStyle}>메모</div>
-          <div style={memoStyle}>{record.freeMemo}</div>
-        </div>
-      )}
+      {memoSlot}
     </div>
   );
 }

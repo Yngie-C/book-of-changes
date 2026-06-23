@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 
-const MAX_MEMO_LENGTH = 500;
+const MAX_MEMO_LENGTH = 100;
 
 export type MemoEditorSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 

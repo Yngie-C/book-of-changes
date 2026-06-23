@@ -278,7 +278,7 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
                   onSave={(memo) => {
                     updateRecord(savedRecord.id, { freeMemo: memo });
                   }}
-                  placeholder="이 점괘에 대한 생각을 남겨보세요"
+                  placeholder="점괘에 대한 간단한 메모를 남겨보세요 (예 : 1/1 오늘의 운세)"
                   saveLabel="메모 저장"
                 />
               </div>
