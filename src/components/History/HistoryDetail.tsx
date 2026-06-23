@@ -141,13 +141,6 @@ export default function HistoryDetail({ record, memoSlot }: HistoryDetailProps) 
     lineHeight: 1,
   };
 
-  const memoStyle: CSSProperties = {
-    fontSize: 'var(--font-size-body1)',
-    color: 'var(--color-text-primary)',
-    lineHeight: 1.7,
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'keep-all',
-  };
 
   // 데이터가 부족하여 괘를 복원할 수 없는 경우
   if (!hexagram) {
