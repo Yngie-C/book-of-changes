@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { Button } from '@toss/tds-mobile';
 import type { DivinationSession } from '@/data/types';
 import { useHexagram } from '@/hooks/useHexagram';
-import { useAiInterpretation } from '@/hooks/useAiInterpretation';
+// import { useAiInterpretation } from '@/hooks/useAiInterpretation'; // 미완 기능
 // import { attachBannerAd } from '@/lib/ads';
 import { trackEvent } from '@/lib/toss';
 import Layout from '@/components/common/Layout';
@@ -17,9 +17,9 @@ import LineTexts from '@/components/Result/LineTexts';
 import HelpModal, { HelpIcon } from '@/components/common/HelpModal';
 import { HexagramHelp, LineTextsHelp, ChangingLineHelp, ChangingHexagramHelp } from '@/components/common/HelpContent';
 
-// AI 컴포넌트는 이중 lazy loading (초기 번들 미증가)
-const AiInputForm = lazy(() => import('@/components/Result/AiInputForm'));
-const AiInterpretationCard = lazy(() => import('@/components/Result/AiInterpretationCard'));
+// AI 컴포넌트 (미완 기능 — 주석 처리)
+// const AiInputForm = lazy(() => import('@/components/Result/AiInputForm'));
+// const AiInterpretationCard = lazy(() => import('@/components/Result/AiInterpretationCard'));
 
 // SaveButton은 직접 import (중첩 lazy 방지: App→ResultPage→SaveButton)
 import SaveButton from '@/components/History/SaveButton';
@@ -37,7 +37,6 @@ type ResultPageProps = {
 export default function ResultPage({ session, onRestart, onBack }: ResultPageProps) {
   const { hexagram, changingHexagram, interpretationRule } = useHexagram(session.lines);
   const [showChanging, setShowChanging] = useState(false);
-  const [showAi, setShowAi] = useState(false);
   const [helpModal, setHelpModal] = useState<'hexagram' | 'line' | 'changing' | 'changingHex' | null>(null);
 
   const highlightedLines = interpretationRule?.highlightedLines ?? [];
@@ -50,15 +49,15 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const aiHook = useAiInterpretation({
-    hexagramNumber: session.hexagramNumber ?? 1,
-    changingHexagramNumber: session.changingHexagramNumber ?? null,
-    highlightedLines,
-  });
+  // const aiHook = useAiInterpretation({ // 미완 기능 — 주석 처리
+  //   hexagramNumber: session.hexagramNumber ?? 1,
+  //   changingHexagramNumber: session.changingHexagramNumber ?? null,
+  //   highlightedLines,
+  // });
 
   const saveHook = useSaveDivination();
 
-  const lastInputRef = useRef<{ situation: string; category: string } | null>(null);
+  // const lastInputRef = useRef<{ situation: string; category: string } | null>(null); // 미완 기능
 
   const handleSave = async () => {
     if (!hexagram) return;
@@ -160,20 +159,20 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
     width: '100%',
   };
 
-  const aiToggleBtnStyle: CSSProperties = {
-    margin: 0,
-    padding: '14px',
-    borderRadius: '12px',
-    border: '1.5px solid #6B5CE7',
-    backgroundColor: showAi ? '#6B5CE7' : 'var(--color-bg)',
-    color: showAi ? 'var(--color-bg)' : '#6B5CE7',
-    fontSize: '15px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'background-color 200ms ease, color 200ms ease',
-    minHeight: '44px',
-    width: '100%',
-  };
+  // const aiToggleBtnStyle: CSSProperties = { // 미완 기능 — 주석 처리
+  //   margin: 0,
+  //   padding: '14px',
+  //   borderRadius: '12px',
+  //   border: '1.5px solid #6B5CE7',
+  //   backgroundColor: showAi ? '#6B5CE7' : 'var(--color-bg)',
+  //   color: showAi ? 'var(--color-bg)' : '#6B5CE7',
+  //   fontSize: '15px',
+  //   fontWeight: 600,
+  //   cursor: 'pointer',
+  //   transition: 'background-color 200ms ease, color 200ms ease',
+  //   minHeight: '44px',
+  //   width: '100%',
+  // };
 
   return (
     <Layout title="점괘 결과" showBack onBack={onBack} bottomCTA={bottomCTA}>
@@ -292,7 +291,7 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
           aria-label="광고"
         /> */}
 
-        {/* AI 맞춤 해석 섹션 */}
+        {/* AI 맞춤 해석 섹션 (미완 기능 — 렌더링 비활성화)
         <div style={{ ...cardStyle, ...animBlock(400) }}>
           <button
             style={aiToggleBtnStyle}
@@ -334,6 +333,7 @@ export default function ResultPage({ session, onRestart, onBack }: ResultPagePro
             </Suspense>
           )}
         </div>
+        */}
       </div>
 
       {/* Help Modals */}
