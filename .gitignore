@@ -9,6 +9,13 @@ dist/
 *.local
 .env
 .env.*
+*.dev.vars
+dev.vars
+
+# A/B 테스트 임시 아티팩트
+api/ab-test.js
+api/ab-test.cjs
+api/ab-test-result.md
 
 # OS
 .DS_Store

@@ -43,12 +43,13 @@ vi.mock('openai', () => {
     choices: [
       {
         message: {
-          content: '```json\n{"interpretation": "테스트 해석", "advice": "테스트 조언"}\n```',
+          content: '{"interpretation": "테스트 해석", "advice": "테스트 조언"}',
           refusal: null,
         },
         finish_reason: 'stop',
       },
     ],
+    usage: { total_tokens: 500 },
   });
 
   return {
