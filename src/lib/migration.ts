@@ -97,6 +97,10 @@ function normalizeRecord(raw: Record<string, unknown>): DivinationRecord {
       raw.lastViewedAt === null || typeof raw.lastViewedAt === 'string'
         ? raw.lastViewedAt
         : null,
+    pinnedAt:
+      raw.pinnedAt === null || typeof raw.pinnedAt === 'string'
+        ? raw.pinnedAt
+        : null,
     viewCount: typeof raw.viewCount === 'number' ? raw.viewCount : 0,
     createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : '',
     updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : '',

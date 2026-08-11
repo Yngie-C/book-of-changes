@@ -37,6 +37,7 @@ function makeRecord(overrides?: Partial<DivinationRecord>): DivinationRecord {
     userQuestion: '',
     freeMemo: '',
     lastViewedAt: null,
+    pinnedAt: null,
     viewCount: 0,
     createdAt: now,
     updatedAt: now,

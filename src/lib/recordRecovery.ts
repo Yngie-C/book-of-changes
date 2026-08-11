@@ -55,6 +55,7 @@ const DEFAULT_RECORD: DivinationRecord = {
   userQuestion: '',
   freeMemo: '',
   lastViewedAt: null,
+  pinnedAt: null,
   viewCount: 0,
   createdAt: '',
   updatedAt: '',
@@ -354,6 +355,7 @@ export function recoverRecord(raw: unknown): RecoveryResult {
   const userQuestion = recoverOptionalString(obj, 'userQuestion', warnings);
   const freeMemo = recoverOptionalString(obj, 'freeMemo', warnings);
   const lastViewedAt = recoverNullableString(obj, 'lastViewedAt', warnings);
+  const pinnedAt = recoverNullableString(obj, 'pinnedAt', warnings);
 
   // 완전 손실 판단: 필수 필드 자체에 missing, type_mismatch, invalid_value가 있으면 fullyLost
   // 하위 요소 warning (예: changingLines[0] type_mismatch)은 fullyLost로 간주하지 않음 — 배열 구조는 살아있음
@@ -381,6 +383,7 @@ export function recoverRecord(raw: unknown): RecoveryResult {
       userQuestion,
       freeMemo,
       lastViewedAt,
+      pinnedAt,
       viewCount,
       createdAt,
       updatedAt,

@@ -767,6 +767,7 @@ describe('paginateRecords', () => {
       userQuestion: overrides.userQuestion ?? '',
       freeMemo: overrides.freeMemo ?? '',
       lastViewedAt: overrides.lastViewedAt ?? null,
+      pinnedAt: overrides.pinnedAt ?? null,
       viewCount: overrides.viewCount ?? 0,
       createdAt: overrides.createdAt ?? ts(0),
       updatedAt: overrides.updatedAt ?? ts(0),

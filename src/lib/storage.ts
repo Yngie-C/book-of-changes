@@ -21,6 +21,9 @@ import { queryRecords, type QueryOptions } from './queryRecords';
 const STORAGE_KEY = 'book-of-changes:records';
 const MAX_RECORDS = 50;
 
+/** 핀 고정 가능한 최대 개수 (저장 상한 50건의 절반). */
+export const PIN_LIMIT = 25;
+
 /**
  * QuotaExceededError 발생 시 사용자 알림용 메시지.
  * UI 컴포넌트에서 이 상수를 참조하여 토스트/다이얼로그를 표시할 수 있다.
@@ -173,6 +176,18 @@ function writeAll(records: DivinationRecord[]): void {
 // ─── Public API ────────────────────────────────────────────────────────────
 
 /**
+ * 기록이 핀 고정 상태인지 확인한다.
+ * pinnedAt이 null/undefined/빈 문자열이 아니면 핀 고정된 것으로 본다.
+ */
+export function isPinned(record: DivinationRecord): boolean {
+  return (
+    record.pinnedAt !== null &&
+    record.pinnedAt !== undefined &&
+    record.pinnedAt !== ''
+  );
+}
+
+/**
  * 새 점술 기록을 저장한다.
  * @returns 생성된 DivinationRecord
  * @throws 용량 초과로 저장 불가 시 에러
@@ -191,6 +206,7 @@ export function saveRecord(input: CreateRecordInput): DivinationRecord {
     userQuestion: input.userQuestion ?? '',
     freeMemo: '',
     lastViewedAt: null,
+    pinnedAt: null,
     viewCount: 0,
     createdAt: now,
     updatedAt: now,
@@ -198,9 +214,26 @@ export function saveRecord(input: CreateRecordInput): DivinationRecord {
 
   const updated = [record, ...records];
 
-  // 최대 50건 유지 (초과 시 마지막 항목 제거)
+  // 최대 MAX_RECORDS(50건) 유지.
+  // 핀 고정된 기록은 evict(자동 삭제)로부터 보호된다 —
+  // 초과분은 핀 없는 가장 오래된 기록부터 밀어낸다.
   if (updated.length > MAX_RECORDS) {
-    updated.length = MAX_RECORDS;
+    const excess = updated.length - MAX_RECORDS;
+    const evictCount = Math.min(excess, updated.filter((r) => !isPinned(r)).length);
+
+    // 최신순(앞) 배열에서 뒤쪽(오래된)의 핀 없는 기록부터 제거
+    const evictable = updated.filter((r) => !isPinned(r));
+    const removedIds = new Set(
+      evictable.slice(-evictCount).map((r) => r.id),
+    );
+    const kept = updated.filter((r) => !removedIds.has(r.id));
+    // 핀 없는 기록이 부족해도 상한을 넘지 않도록 잘라낸다
+    if (kept.length > MAX_RECORDS) {
+      kept.length = MAX_RECORDS;
+    }
+    const final = kept;
+    writeAll(final);
+    return record;
   }
 
   writeAll(updated);
@@ -486,9 +519,18 @@ export function reinsertRecord(record: DivinationRecord): void {
   const records = readAll();
   const updated = [record, ...records];
 
-  // 최대 50건 유지 (초과 시 마지막 항목 제거)
+  // 최대 MAX_RECORDS(50건) 유지 — 핀 고정 기록은 evict 보호
   if (updated.length > MAX_RECORDS) {
-    updated.length = MAX_RECORDS;
+    const excess = updated.length - MAX_RECORDS;
+    const evictCount = Math.min(excess, updated.filter((r) => !isPinned(r)).length);
+    const evictable = updated.filter((r) => !isPinned(r));
+    const removedIds = new Set(evictable.slice(-evictCount).map((r) => r.id));
+    const kept = updated.filter((r) => !removedIds.has(r.id));
+    if (kept.length > MAX_RECORDS) {
+      kept.length = MAX_RECORDS;
+    }
+    writeAll(kept);
+    return;
   }
 
   writeAll(updated);
@@ -582,4 +624,87 @@ export function duplicateCheck(
       a.length === b.length && a.every((val, idx) => val === b[idx])
     );
   });
+}
+
+// ─── Pin (핀 고정) ───────────────────────────────────────────────────────────
+
+/** 현재 저장된 기록의 핀 개수를 반환한다. */
+export function getPinnedCount(): number {
+  return readAll().filter((r) => isPinned(r)).length;
+}
+
+/** 주어진 배열에서 핀 고정된 기록의 개수를 반환한다. */
+export function countPinnedRecords(records: DivinationRecord[]): number {
+  return records.filter((r) => isPinned(r)).length;
+}
+
+/**
+ * 기록을 핀 고정한다.
+ *
+ * 핀 고정은 저장 상한 초과 시 evict(자동 삭제)로부터 기록을 보호한다.
+ * 이미 핀 고정된 기록은 아무 변화 없이 그대로 반환된다.
+ *
+ * @param id - 기록 UUID
+ * @returns 핀 고정 성공 시 true, 기록이 없거나 핀 상한(PIN_LIMIT)에 도달하면 false
+ */
+export function pinRecord(id: string): boolean {
+  const records = readAll();
+  const record = records.find((r) => r.id === id);
+  if (!record) return false;
+  if (isPinned(record)) return true;
+
+  // 핀 상한 확인 — 이미 가득 찼으면 실패
+  if (countPinnedRecords(records) >= PIN_LIMIT) return false;
+
+  record.pinnedAt = new Date().toISOString();
+  record.updatedAt = new Date().toISOString();
+  writeAll(records);
+  return true;
+}
+
+/**
+ * 기록의 핀 고정을 해제한다.
+ *
+ * @param id - 기록 UUID
+ * @returns 해제 성공 시 true, 기록이 없으면 false
+ */
+export function unpinRecord(id: string): boolean {
+  const records = readAll();
+  const record = records.find((r) => r.id === id);
+  if (!record) return false;
+  if (!isPinned(record)) return true;
+
+  record.pinnedAt = null;
+  record.updatedAt = new Date().toISOString();
+  writeAll(records);
+  return true;
+}
+
+/**
+ * 기록의 핀 상태를 토글한다.
+ *
+ * 핀 고정 중이면 해제, 아니면 고정 시도. 핀 상한(PIN_LIMIT)에 도달한 상태에서
+ * 새로 고정을 시도하면 false를 반환한다.
+ *
+ * @param id - 기록 UUID
+ * @returns 토글 성공 시 true, 기록이 없거나 상한 도달로 실패 시 false
+ */
+export function togglePinRecord(id: string): boolean {
+  const records = readAll();
+  const record = records.find((r) => r.id === id);
+  if (!record) return false;
+
+  if (isPinned(record)) {
+    record.pinnedAt = null;
+    record.updatedAt = new Date().toISOString();
+    writeAll(records);
+    return true;
+  }
+
+  if (countPinnedRecords(records) >= PIN_LIMIT) return false;
+
+  record.pinnedAt = new Date().toISOString();
+  record.updatedAt = new Date().toISOString();
+  writeAll(records);
+  return true;
 }

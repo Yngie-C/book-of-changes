@@ -30,6 +30,7 @@ function makeRecord(overrides?: Partial<DivinationRecord>): DivinationRecord {
     userQuestion: '오늘의 운세는?',
     freeMemo: '',
     lastViewedAt: null,
+    pinnedAt: null,
     viewCount: 0,
     createdAt: '2026-06-02T03:00:00.000Z',
     updatedAt: '2026-06-02T03:00:00.000Z',
