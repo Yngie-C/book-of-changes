@@ -5,6 +5,9 @@ import {
   loadRecords,
   deleteHistoryItem,
   sortByTimestampDesc,
+  togglePinRecord,
+  isPinned,
+  PIN_LIMIT,
 } from '@/lib/storage';
 import { queryRecords } from '@/lib/queryRecords';
 
@@ -124,7 +127,42 @@ export function useHistoryList(options?: QueryOptions) {
     refresh(options);
   }, [refresh, options]);
 
-  return { state, deleteRecord, refresh };
+  /**
+   * 기록의 핀 상태를 토글하고 로컬 상태에도 반영한다.
+   *
+   * @param id — 기록 UUID
+   * @returns 성공 시 true, 핀 상한(PIN_LIMIT) 도달로 실패 시 false
+   */
+  const togglePin = useCallback(
+    (id: string): boolean => {
+      const ok = togglePinRecord(id);
+      if (!ok) return false;
+
+      // 로컬 상태 재정렬 (핀 우선)
+      setState((prev) => {
+        if (prev.status !== 'ready') return prev;
+        const updated = [...prev.records];
+        const idx = updated.findIndex((r) => r.id === id);
+        if (idx !== -1) {
+          const rec = updated[idx];
+          updated[idx] = { ...rec, pinnedAt: isPinned(rec) ? null : new Date().toISOString() };
+        }
+        // 핀 우선 정렬 재적용
+        const sorted = [...updated].sort((a, b) => {
+          const aP = isPinned(a);
+          const bP = isPinned(b);
+          if (aP !== bP) return aP ? -1 : 1;
+          return 0;
+        });
+        return { ...prev, records: sorted };
+      });
+
+      return true;
+    },
+    [],
+  );
+
+  return { state, deleteRecord, refresh, togglePin, pinLimit: PIN_LIMIT };
 }
 
 /**

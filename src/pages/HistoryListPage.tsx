@@ -6,7 +6,7 @@ import HistoryDetail from '@/components/History/HistoryDetail';
 import MemoEditor from '@/components/History/MemoEditor';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import Layout from '@/components/common/Layout';
-import { updateRecord } from '@/lib/storage';
+import { updateRecord, isPinned } from '@/lib/storage';
 import { trackEvent } from '@/lib/toss';
 
 type HistoryListPageProps = {
@@ -14,10 +14,11 @@ type HistoryListPageProps = {
 };
 
 export default function HistoryListPage({ onBack }: HistoryListPageProps) {
-  const { state, deleteRecord, refresh } = useHistoryList();
+  const { state, deleteRecord, refresh, togglePin, pinLimit } = useHistoryList();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DivinationRecord | null>(null);
   const [memoEditing, setMemoEditing] = useState(false);
+  const [pinLimitNotice, setPinLimitNotice] = useState(false);
 
   const selectedRecord =
     selectedId && state.status === 'ready'
@@ -29,6 +30,15 @@ export default function HistoryListPage({ onBack }: HistoryListPageProps) {
   const handleSelect = (id: string) => {
     setSelectedId(id);
     trackEvent('history_detail_view', 'click');
+  };
+
+  const handleTogglePin = (id: string) => {
+    const ok = togglePin(id);
+    if (!ok) {
+      setPinLimitNotice(true);
+      setTimeout(() => setPinLimitNotice(false), 2500);
+    }
+    trackEvent('history_pin_toggle', 'click');
   };
 
   const handleBackToList = () => {
@@ -115,6 +125,24 @@ export default function HistoryListPage({ onBack }: HistoryListPageProps) {
     fontSize: '13px',
     cursor: 'pointer',
     padding: '4px 8px',
+  };
+
+  const pinBtnStyle: CSSProperties = {
+    background: 'none',
+    border: 'none',
+    fontSize: '18px',
+    cursor: 'pointer',
+    padding: '4px',
+    lineHeight: 1,
+    opacity: 0.6,
+    filter: 'grayscale(1)',
+    transition: 'opacity 150ms ease',
+  };
+
+  const pinBtnActiveStyle: CSSProperties = {
+    ...pinBtnStyle,
+    opacity: 1,
+    filter: 'none',
   };
 
   const editBtnStyle: CSSProperties = {
@@ -259,6 +287,105 @@ export default function HistoryListPage({ onBack }: HistoryListPageProps) {
   // ── List ──────────────────────────────────────────────────────────────────
 
   const records = state.status === 'ready' ? state.records : [];
+  const pinnedRecords = records.filter((r) => isPinned(r));
+  const unpinnedRecords = records.filter((r) => !isPinned(r));
+
+  const renderListItem = (record: DivinationRecord) => (
+    <div
+      key={record.id}
+      style={listItemStyle}
+      onClick={() => handleSelect(record.id)}
+      role="button"
+      tabIndex={0}
+      aria-label={`${record.mainHexagram} 기록 보기`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleSelect(record.id);
+        }
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <div style={hexagramNameStyle}>
+          {record.mainHexagram}
+          {record.freeMemo && (
+            <span
+              style={{
+                marginLeft: '8px',
+                fontSize: '12px',
+                color: '#6B5CE7',
+                verticalAlign: 'middle',
+              }}
+            >
+              📝
+            </span>
+          )}
+        </div>
+        <button
+          type="button"
+          style={isPinned(record) ? pinBtnActiveStyle : pinBtnStyle}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleTogglePin(record.id);
+          }}
+          aria-label={
+            isPinned(record)
+              ? `${record.mainHexagram} 핀 해제`
+              : `${record.mainHexagram} 핀 고정`
+          }
+          aria-pressed={isPinned(record)}
+        >
+          📌
+        </button>
+      </div>
+      {record.freeMemo && (
+        <div
+          style={{
+            fontSize: '13px',
+            color: 'var(--color-text-secondary)',
+            marginTop: '4px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            maxWidth: '100%',
+          }}
+        >
+          {record.freeMemo}
+        </div>
+      )}
+      <div style={metaRowStyle}>
+        <span>
+          {new Date(record.timestamp).toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+          {record.changingLines.length > 0 &&
+            ` · 변효 ${record.changingLines.length}개`}
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>{record.viewCount}회 조회</span>
+          <button
+            type="button"
+            style={deleteBtnStyle}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeleteTarget(record);
+            }}
+            aria-label={`${record.mainHexagram} 기록 삭제`}
+          >
+            삭제
+          </button>
+        </span>
+      </div>
+    </div>
+  );
 
   return (
     <Layout title="기록 보기" showBack onBack={onBack}>
@@ -275,78 +402,38 @@ export default function HistoryListPage({ onBack }: HistoryListPageProps) {
           </p>
         )}
 
-        {records.map((record) => (
+        {pinLimitNotice && (
           <div
-            key={record.id}
-            style={listItemStyle}
-            onClick={() => handleSelect(record.id)}
-            role="button"
-            tabIndex={0}
-            aria-label={`${record.mainHexagram} 기록 보기`}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleSelect(record.id);
-              }
+            style={{
+              backgroundColor: 'var(--color-bg-elevated, #FFF4E5)',
+              border: '1px solid #ED8936',
+              color: '#C05621',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              fontSize: '13px',
+              marginBottom: '12px',
             }}
           >
-            <div style={hexagramNameStyle}>
-              {record.mainHexagram}
-              {record.freeMemo && (
-                <span
-                  style={{
-                    marginLeft: '8px',
-                    fontSize: '12px',
-                    color: '#6B5CE7',
-                    verticalAlign: 'middle',
-                  }}
-                >
-                  📝
-                </span>
-              )}
-            </div>
-            {record.freeMemo && (
-              <div
-                style={{
-                  fontSize: '13px',
-                  color: 'var(--color-text-secondary)',
-                  marginTop: '4px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  maxWidth: '100%',
-                }}
-              >
-                {record.freeMemo}
-              </div>
-            )}
-            <div style={metaRowStyle}>
-              <span>
-                {new Date(record.timestamp).toLocaleDateString('ko-KR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-                {record.changingLines.length > 0 &&
-                  ` · 변효 ${record.changingLines.length}개`}
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>{record.viewCount}회 조회</span>
-                <button
-                  type="button"
-                  style={deleteBtnStyle}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteTarget(record);
-                  }}
-                  aria-label={`${record.mainHexagram} 기록 삭제`}
-                >
-                  삭제
-                </button>
-              </span>
-            </div>
+            📌 핀은 최대 {pinLimit}개까지 고정할 수 있어요. 핀을 해제한 후 다시
+            시도해 주세요.
           </div>
-        ))}
+        )}
+
+        {pinnedRecords.length > 0 && (
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                📌 핀 고정
+              </span>
+              <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                {pinnedRecords.length}/{pinLimit}
+              </span>
+            </div>
+            {pinnedRecords.map((record) => renderListItem(record))}
+          </div>
+        )}
+
+        {unpinnedRecords.map((record) => renderListItem(record))}
       </div>
 
       {/* 삭제 확인 다이얼로그 */}

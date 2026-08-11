@@ -159,6 +159,15 @@ function matchesHexagramNumbers(
   return numbers.has(num);
 }
 
+/** 기록이 핀 고정 상태인지 확인한다 (pinnedAt 비어있지 않으면 핀). */
+function isPinned(record: DivinationRecord): boolean {
+  return (
+    record.pinnedAt !== null &&
+    record.pinnedAt !== undefined &&
+    record.pinnedAt !== ''
+  );
+}
+
 // ─── Public API ─────────────────────────────────────────────────────────────
 
 /**
@@ -248,7 +257,21 @@ export function queryRecords(
   }
 
   // ── Phase 3: 정렬 ──
+  // 핀 고정된 기록은 항상 최상단에 위치한다 (그 안에서 pinnedAt 최신순).
+  // 핀 없는 기록은 기존 sort 옵션에 따라 정렬한다.
   filtered = [...filtered].sort((a, b) => {
+    const aPinned = isPinned(a);
+    const bPinned = isPinned(b);
+
+    if (aPinned !== bPinned) {
+      return aPinned ? -1 : 1;
+    }
+
+    // 둘 다 핀이면 pinnedAt 최신순 (오래 먼저 고정된 것이 위로 오려면 asc)
+    if (aPinned && bPinned) {
+      return (a.pinnedAt ?? '').localeCompare(b.pinnedAt ?? '');
+    }
+
     let comparison: number;
 
     if (sort.field === 'timestamp') {

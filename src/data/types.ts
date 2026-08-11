@@ -69,6 +69,7 @@ export interface DivinationRecord {
   userQuestion?: string;              // 사용자 질문, 없으면 빈 문자열
   freeMemo?: string;                  // 자유 메모, 없으면 빈 문자열
   lastViewedAt?: string | null;       // 마지막 조회 일시 (ISO 8601), 미조회 시 null
+  pinnedAt: string | null;            // 핀 고정 시점 (ISO 8601), null이면 핀 아님, 값 있으면 핀 고정됨
   viewCount: number;                  // 기록 상세 조회 횟수, 생성 시 0
   createdAt: string;                  // 생성 일시 (ISO 8601)
   updatedAt: string;                  // 마지막 수정 일시 (ISO 8601)
